@@ -79,7 +79,7 @@ async def interactive_lean_check(
     tools = [create_lean_check_function()]
     attempts = []
     
-    for attempt in range(max_attempts):
+    for attempt in range(max_attempts+1):
         try:
             response = await acompletion(
                 model=model,
