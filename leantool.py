@@ -64,6 +64,7 @@ async def interactive_lean_check(
     temperature: float = 0.1,
     max_attempts: int = 5,
     final_check: bool = False,
+    prefix: str ='',
     messages=None
 ) -> Dict[str, Any]:
     """
@@ -72,8 +73,12 @@ async def interactive_lean_check(
     """
     if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE}]
 
+    msg=f"Please write Lean 4 code for the following: {proof_request}"
+    if len(prefix)>0:
+        msg+=f"\nThe following code is prepended to your code before execution by Lean. So when submitting your code via the tool call or final <Result> tag, only submit the part after this prefix:\n{prefix}"
+    
     messages = messages + [
-        {"role": "user", "content": f"Please write Lean 4 code for the following: {proof_request}"}
+        {"role": "user", "content": msg}
     ]
     
     tools = [create_lean_check_function()]
@@ -111,7 +116,7 @@ async def interactive_lean_check(
                       # Verify the final code works
                       final_result = check_lean_code(final_code)
                       attempts.append({
-                        "code": final_code,
+                        "code": prefix+final_code,
                         "result": final_result,
                         "is_final": True
                       })
@@ -128,7 +133,7 @@ async def interactive_lean_check(
             if function_call:
                 args = json.loads(function_call.function.arguments)
                 result = check_lean_code(
-                    code=args["code"],
+                    code=prefix+args["code"],
                     json_output=args.get("json_output", False)
                 )
                 
