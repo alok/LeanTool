@@ -60,11 +60,12 @@ sorry  -- Could not complete proof
 
 async def interactive_lean_check(
     proof_request: str,
-    model: str = "gpt-4o",
+    model: str = models['sonnet'],
     temperature: float = 0.1,
     max_attempts: int = 5,
     final_check: bool = False,
     prefix: str ='',
+    files =[],
     messages=None
 ) -> Dict[str, Any]:
     """
@@ -76,7 +77,16 @@ async def interactive_lean_check(
     msg=f"Please write Lean 4 code for the following: {proof_request}"
     if len(prefix)>0:
         msg+=f"\nThe following code is prepended to your code before execution by Lean. So when submitting your code via the tool call or final <Result> tag, only submit the part after this prefix:\n{prefix}"
-    
+    if files is not None and len(files)>0:
+        for fn in files:
+            with open(fn) as f:
+                txt=f.read()
+            messages.append({
+                "role": "user",
+                "content": f"The following is the conent of the file '{fn}':\n{txt}"
+            })
+        #prompt caching
+        messages[-1]['cache_control']={'type': 'ephemeral'}
     messages = messages + [
         {"role": "user", "content": msg}
     ]
@@ -102,7 +112,6 @@ async def interactive_lean_check(
                     "success":False,
                     "attempts":attempts,
                     "error":response.choices[0].finish_reason,
-                    "is_falure":True,
                     "messages":messages
                 }
             message_content = message.content if hasattr(message, 'content') else None
@@ -121,11 +130,15 @@ async def interactive_lean_check(
                         "is_final": True
                       })
                     messages.append(message.model_dump())
+                    if "FAIL" in message_content:
+                        success=False
+                    else:
+                        success=final_result["success"] if final_check else True
+
                     return {
-                        "success": final_result["success"] if final_check else True,
+                        "success": success,
                         "attempts": attempts,
                         "final_code": final_code,
-                        "is_failure": "FAIL" in message_content,
                         "messages": messages
                     }
             
@@ -168,6 +181,13 @@ async def interactive_lean_check(
                 "role": "assistant",
                 "content": message_content
             })
+            if 'anthropic' in model:
+                return {
+                        "success": False,
+                        "attempts": attempts,
+                        "messages": messages
+                }
+
             
         except Exception as e:
             attempts.append({
@@ -180,7 +200,6 @@ async def interactive_lean_check(
         "success": False,
         "attempts": attempts,
         "error": f"Failed to get valid result after {max_attempts} attempts",
-        "is_failure": True,
         "messages": messages
     }
 

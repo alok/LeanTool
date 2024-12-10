@@ -1,0 +1,47 @@
+
+Lately, I have been gravitating towards a particular style.
+First, a brief background: in Lean and other dependent typed languages, propositions are types.
+A proof that proposition `P` implies proposition `Q` is a function from type `P` to type `Q`.
+And proof checking is just type checking. 
+
+Many of us are fans of strongly typed programming languages, because the type system
+can help enforce and verify certain kinds of logical consistency on our code, if they are 
+expressible as type restrictions on data. With dependent-typed languages like Lean we
+can take this to the next level: we can put in the type definitions of data
+arbitrary propositions that express the logical properties of the data.
+The type system then does its work: this type information follows the data as
+they are passed around the code, and checked when required. 
+When I am ready to return a value in a function whose return type requires a certain property to be satisfied, and that property is not yet present, I am then obligated
+to provide a proof that the return value satisfies the property, and pass it along with
+the return value. Thus much of the proving is done inside the body of the function 
+definition, interleaved with code.
+
+For example, our `isIn` function can be implemented and proved in this style:
+
+{% highlight lean %}
+def isInTyped(x:Int)(xs:List Int)
+:{b:Bool // b=true ↔ x∈ xs} :=
+  match xs with
+  |[] => ⟨false, by simp⟩
+  |h::t =>
+    let rest := isInTyped x t
+    ⟨x==h || rest, by simp[rest.2]⟩
+{% endhighlight %}
+The return type `{b:Bool // b=true ↔ x∈ xs}` defines a *subtype* of Bool,
+meaning Booleans `b` that satisfies `b=true ↔ x∈ xs`.
+When returning in the base case and recursive case,
+I am passing the value as well as the proof that the value satisfies the return type.
+(The brackets `⟨ ⟩` syntax just means "pass to the constructor of the appropriate type".)
+Can you spot the induction hypothesis? 
+
+Beyond specializing the return type, we can also attach propositions to the types
+of internal data structures used by the algorithm, even individual pieces of data stored
+by the data structures. This is especially natural when we are to maintain certain invariances
+on the data. 
+
+Overall, I find it easier to prove in this style. It feels like coding in a very strongly-typed
+language, where you sometimes need to prove a proposition in order to construct a piece of data 
+with the right type. Often, there is *intention* behind how we choose to write code a certain
+way; e.g. we believe this line of code is needed because it establishes a certain property of the data, which ultimately leads to the correctness of our final output. So in a way when we write code we are already doing coding and (implicit) proving at the same time. Now we are just making the proving part explicit. 
+
+

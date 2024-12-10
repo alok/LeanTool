@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 litellm = "^1.52.10"
 streamlit = "^1.40.1"
+jsonlines = "^4.0.0"
 
 
 [build-system]
