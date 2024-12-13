@@ -8,6 +8,7 @@ import tempfile
 import os
 import re
 import traceback
+from pantograph import Server
 
 models={
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
@@ -194,7 +195,8 @@ async def interactive_lean_check(
                 "error": str(e) + '\n' + traceback.format_exc(),
                 "is_final": False
             })
-    
+        if 'anthropic' in model:
+            await asyncio.sleep(1)
     # If we've exhausted attempts, return the history
     return {
         "success": False,
@@ -277,7 +279,11 @@ def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
                 output = json.loads(output)
             except json.JSONDecodeError:
                 raise LeanToolException("Failed to parse Lean JSON output")
-        
+        #extract goals from sorrys
+        if success and "sorry" in output:
+            server=Server()     #Server(project_path=".")
+            states = server.load_sorry(code)
+            output += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
         return {
             "success": success,
             "output": output,
