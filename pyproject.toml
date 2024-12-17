@@ -11,6 +11,7 @@ litellm = "^1.52.10"
 streamlit = "^1.40.1"
 jsonlines = "^4.0.0"
 pantograph = { file = "PyPantograph/dist/pantograph-0.2.19-cp310-cp310-manylinux_2_31_x86_64.whl" }
+flask = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core"]

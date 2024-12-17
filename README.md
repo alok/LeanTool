@@ -19,5 +19,5 @@ Currently used by [FormalizeWithTest](https://github.com/GasStationManager/Forma
 ## Files
 
 - `leantool.py` Python library
-- `cli_chat.py` simple command line chat interface
+- `cli_chat.py` command line chat interface
 - `app.py` Streamlit chat interface

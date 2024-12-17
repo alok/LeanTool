@@ -37,7 +37,7 @@ When you have a final answer:
 - If successful, output the final valid Lean code wrapped in <Result> tags
 - If unsuccessful after {max_attempts} attempts, output "FAIL" followed by your best attempt wrapped in <Result> tags
 
-Process:
+If you believe you can directly solve the task given by the request:
 1. Write initial code based on the request
 2. Call check_lean_code to verify it
 3. If there are errors, analyze them and make modifications
@@ -45,7 +45,7 @@ Process:
    - The code is valid (output with <Result> tags)
    - You determine you cannot fix the issues (output "FAIL" and best attempt)
 
-You may also:
+If you believe the task is more complex and would benefit from a step by step approach:
 1. Start with a proof sketch containing `sorry` placeholders.
 2. Call check_lean_code. If your code is syntactically correct, the tool will output goal states corresponding to each `sorry`
 3. Replace a `sorry` with a proof or a more refined proof sketch. Call check_lean_code to verify.
@@ -53,7 +53,7 @@ You may also:
 
 You may import libraries as needed. If you are unsure about which particular Mathlib import contains what you need, you may `import Mathlib` to import all of Mathlib.
 
-Some of the following may require Mathlib.
+If you get stuck trying to solve a subgoal, try some of the following. Some of these may require Mathlib.
 You are free to use tactics and commands that elicit suggestions from Lean, then call check_lean_code to get the suggestions. 
 - `exact?` looks for tactics/theorems that exactly closes the current goal
 - `apply?` looks for tactics/theorems that may be applicable to the current goal
