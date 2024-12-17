@@ -7,12 +7,14 @@ async def chat_loop():
     print("Type 'multi ENDINPUT' to start a multiline input starting from the next line, ending with a line of only 'ENDINPUT'")
     print("Type 'exit' to quit")
     print("Type 'reset' to reset message history")
+    print("Type 'attempts n' to set the max number of calls to lean per turn")
     print("Type 'save filename' to save message history")
     print("Type 'load filename' to load a text file to be read by the LLM")
     print("Type 'resume filename' to resume from chat history\n")
 
     messages=None
     files=[]
+    max_attempts=5
     while True:
         # Get user input
         user_input = input("\nWhat would you like to prove? > ")
@@ -20,6 +22,10 @@ async def chat_loop():
             break
         if user_input.lower() == 'reset':
             messages=None
+            continue
+
+        if user_input.lower().startswith('attempts'):
+            max_attempts=int(user_input.split()[1])
             continue
         if user_input.lower().startswith('save'):
             fn = user_input.split()[1]
@@ -49,7 +55,7 @@ async def chat_loop():
                 proof_request=user_input,
                 #model="gpt-4",
                 #temperature=0.1,
-                #max_attempts=5
+                max_attempts=max_attempts,
                 files=files,
                 messages=messages
             )
