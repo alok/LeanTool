@@ -8,6 +8,7 @@ import tempfile
 import os
 import re
 import traceback
+from pantograph import Server
 
 models={
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
@@ -34,15 +35,42 @@ You can:
 
 When you have a final answer:
 - If successful, output the final valid Lean code wrapped in <Result> tags
-- If unsuccessful after attempts, output "FAIL" followed by your best attempt wrapped in <Result> tags
+- If unsuccessful after {max_attempts} attempts, output "FAIL" followed by your best attempt wrapped in <Result> tags
 
-Process:
+If you believe you can directly solve the task given by the request:
 1. Write initial code based on the request
 2. Call check_lean_code to verify it
 3. If there are errors, analyze them and make modifications
 4. Continue this loop until either:
    - The code is valid (output with <Result> tags)
    - You determine you cannot fix the issues (output "FAIL" and best attempt)
+
+If you believe the task is more complex and would benefit from a step by step approach:
+1. Start with a proof sketch containing `sorry` placeholders.
+2. Call check_lean_code. If your code is syntactically correct, the tool will output goal states corresponding to each `sorry`
+3. Replace a `sorry` with a proof or a more refined proof sketch. Call check_lean_code to verify.
+4. Repeat until the code is complete with no `sorry` left
+
+You may import libraries as needed. If you are unsure about which particular Mathlib import contains what you need, you may `import Mathlib` to import all of Mathlib.
+
+If you get stuck trying to solve a subgoal, try some of the following. Some of these may require Mathlib.
+You are free to use tactics and commands that elicit suggestions from Lean, then call check_lean_code to get the suggestions. 
+- `exact?` looks for tactics/theorems that exactly closes the current goal
+- `apply?` looks for tactics/theorems that may be applicable to the current goal
+- `hint` tries every tactic registered via the register_hint tac command on the current goal, and reports which ones succeed
+- If you know or guess the name of a theorem, you can use `#check` to print its type, e.g. `#check Nat.zero_add`.
+- `#moogle` and `#leansearch` are two search engines that can take natural language queries and return relevant theorems and tactics in Mathlib. E.g. 
+```
+example : 3 ≤ 5 := by
+  #moogle "If a natural number n is less than m, then the successor of n is less than the successor of m."
+  sorry
+```
+
+You may also try the following tactics for closing goals, which might not have been in your training data:
+- `aesop` searchs for a proof that closes the goal
+- `omega` can close goals using integer and natural number arithmetic
+- `simp_all` is a stronger version of `simp [*] at *` where the hypotheses and target are simplified multiple times until no simplification is applicable.
+- `bv_decide` can close goals involving booleans and bit vectors
 
 Example successful output:
 <Result>
@@ -72,7 +100,7 @@ async def interactive_lean_check(
     Interactively work with an LLM to generate valid Lean code, allowing for
     multiple attempts based on feedback.
     """
-    if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE}]
+    if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE.format(max_attempts=max_attempts)}]
 
     msg=f"Please write Lean 4 code for the following: {proof_request}"
     if len(prefix)>0:
@@ -194,7 +222,8 @@ async def interactive_lean_check(
                 "error": str(e) + '\n' + traceback.format_exc(),
                 "is_final": False
             })
-    
+        if 'anthropic' in model:
+            await asyncio.sleep(1)
     # If we've exhausted attempts, return the history
     return {
         "success": False,
@@ -277,7 +306,11 @@ def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
                 output = json.loads(output)
             except json.JSONDecodeError:
                 raise LeanToolException("Failed to parse Lean JSON output")
-        
+        #extract goals from sorrys
+        if success and "sorry" in output:
+            server=Server()     #Server(project_path=".")
+            states = server.load_sorry(code)
+            output += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
         return {
             "success": success,
             "output": output,
