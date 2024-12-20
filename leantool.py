@@ -10,6 +10,9 @@ import re
 import traceback
 from pantograph import Server
 
+import litellm
+litellm.set_verbose=True
+
 models={
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
@@ -102,7 +105,7 @@ async def interactive_lean_check(
     """
     if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE.format(max_attempts=max_attempts)}]
 
-    msg=f"Please write Lean 4 code for the following: {proof_request}"
+    msg=f"{proof_request}"
     if len(prefix)>0:
         msg+=f"\nThe following code is prepended to your code before execution by Lean. So when submitting your code via the tool call or final <Result> tag, only submit the part after this prefix:\n{prefix}"
     if files is not None and len(files)>0:

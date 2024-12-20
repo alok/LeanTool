@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 import asyncio
 from leantool import interactive_lean_check, models
 import json
@@ -30,6 +30,7 @@ def create_chat_completion_response(result):
         }
     
     last_assistant_msg = assistant_msgs[-1]
+    print (last_assistant_msg)
     
     response = {
         "id": f"chatcmpl-{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -51,6 +52,16 @@ def create_chat_completion_response(result):
     }
     
     return response
+
+
+def generate_streaming_response(final_response, model):
+    yield "data: " + json.dumps({
+            "choices": [{"delta": {"content": final_response}, "index": 0, "finish_reason": "stop"}],
+            "model": model,
+    }) + "\n\n"
+
+    # Yield the final message to indicate the stream has ended
+    yield "data: [DONE]\n\n"
 
 @app.route("/v1/chat/completions", methods=["POST"])
 def chat_completions():
@@ -98,6 +109,9 @@ def chat_completions():
             messages=messages[:-1]  # Pass previous messages for context
         ))
         
+        stream = data.get("stream", False)
+        if stream:
+            return Response(generate_streaming_response(result,model), content_type='text/event-stream')
         # Convert result to OpenAI format
         response = create_chat_completion_response(result)
         
@@ -119,5 +133,53 @@ def chat_completions():
             }
         }), 500
 
+@app.route("/v1/models", methods=["GET"])
+def list_models():
+    """OpenAI-compatible endpoint to list available models"""
+    model_list = []
+    for model_id, full_name in models.items():
+        model_list.append({
+            "id": model_id,
+            "object": "model",
+            "created": 1677610602,  # placeholder timestamp
+            "owned_by": "local",
+            "permission": [],
+            "root": full_name,
+            "parent": None,
+            "context_window": 100000,  # placeholder value
+            "messages_supported": True,
+            "tools_supported": True,
+        })
+
+    return jsonify({
+        "object": "list",
+        "data": model_list
+    })
+
+@app.route("/v1/models/<model_id>", methods=["GET"])
+def get_model(model_id):
+    """Get information about a specific model"""
+    if model_id not in models:
+        return jsonify({
+            "error": {
+                "message": f"Model '{model_id}' not found",
+                "type": "invalid_request_error",
+                "code": 404
+            }
+        }), 404
+
+    return jsonify({
+        "id": model_id,
+        "object": "model",
+        "created": 1677610602,  # placeholder timestamp
+        "owned_by": "local",
+        "permission": [],
+        "root": models[model_id],
+        "parent": None,
+        "context_window": 100000,  # placeholder value
+        "messages_supported": True,
+        "tools_supported": True,
+    })
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
