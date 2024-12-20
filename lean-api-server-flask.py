@@ -56,7 +56,7 @@ def create_chat_completion_response(result):
 
 def generate_streaming_response(final_response, model):
     yield "data: " + json.dumps({
-            "choices": [{"delta": {"content": final_response}, "index": 0, "finish_reason": "stop"}],
+            "choices": [{"delta": {"content": final_response, "role": "assistant"}, "index": 0, "finish_reason": "stop"}],
             "model": model,
     }) + "\n\n"
 
@@ -110,13 +110,13 @@ def chat_completions():
         ))
         
         stream = data.get("stream", False)
-        if stream:
-            return Response(generate_streaming_response(result,model), content_type='text/event-stream')
         # Convert result to OpenAI format
         response = create_chat_completion_response(result)
         
         if "error" in response:
             return jsonify(response), 500
+        if stream:
+            return Response(generate_streaming_response(response['choices'][0]['message']['content'],model), content_type='text/event-stream')
             
         return jsonify(response)
         
