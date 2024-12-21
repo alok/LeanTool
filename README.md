@@ -1,11 +1,21 @@
 # LeanTool
 
-This is a simple utility to arm LLMs with a "Code Interpreter" for Lean. Uses [LiteLLM](https://github.com/BerriAI/litellm) so you can plug in any compatible LLM, from OpenAI and Anthropic APIs to local LLMs hosted via ollama or vLLM.
+A simple utility that connects LLMs with a "Code Interpreter" for Lean. This is implemented as *tool calls* from the LLM to the Lean executable, hence the name.
 
-Currently used by [FormalizeWithTest](https://github.com/GasStationManager/FormalizeWithTest) autoformalization project.
+Current LLMs often have trouble with outputing correct Lean 4 syntax, due to the recent rapid changes in Lean. By allowing LLMs to talk directly to Lean, 
+they are given opportunities to fix their mistakes.
+Furthermore, Lean being an interactive theorem prover,
+there are many interactive features that are not well represented in training data. 
+This utility includes some initial efforts on prompting the LLMs with instructions on using these interactive features to better produce proofs.
+
+Our design goal is to be flexible: easy to plug into automated workflows, but can also be plugged into human-facing chat/copilot interfaces.
+
+This is part of a broader effort to create [safe and hallucination-free coding AIs](https://gasstationmanager.github.io/ai/2024/11/04/a-proposal.html). 
+
 
 ## Features
 
+- Uses [LiteLLM](https://github.com/BerriAI/litellm) so you can plug in any compatible LLM, from OpenAI and Anthropic APIs to local LLMs hosted via ollama or vLLM.
 - Feedback loop that allows the LLM to fix its errors.
 - Uses [Pantograph](https://github.com/lenianiva/PyPantograph/) to extract goal states from `sorry`s.
 - System prompt instructions to utilize Lean features that are likely missing from the LLMs' training data, including interactive commands that elicit suggestions / information from Lean
@@ -23,8 +33,11 @@ Currently used by [FormalizeWithTest](https://github.com/GasStationManager/Forma
 
 ## Files
 
-- `leantool.py` Python library.
-- `cli_chat.py` command line chat interface
-- `app.py` Streamlit chat interface
-- `lean-api-server-flask.py` OpenAI API compatible proxy server
+- `leantool.py` Python library. Simply import the file and call `interactive_lean_check` to invoke the feedback loop.
+Currently used by [FormalizeWithTest](https://github.com/GasStationManager/FormalizeWithTest) autoformalization project.
+- `cli_chat.py` command line chat interface.
+- `app.py` Streamlit chat interface.
+- `lean-api-server-flask.py` OpenAI API compatible proxy server. Can be plugged into any application that takes a OpenAI API model with custom base URL. 
+Has been tested to work with [OpenWebUI](https://openwebui.com/), a fully featured chat interface, 
+and [Continue](https://www.continue.dev/), a VS Code plugin coding assistant.
 
