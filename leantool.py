@@ -28,7 +28,7 @@ class LeanToolException(Exception):
     """Custom exception for Lean tool errors"""
     pass
 
-SYSTEM_MESSAGE = """You are an assistant that writes Lean 4 code. You have access to a tool that can check whether your code is valid using the Lean proof assistant.
+SYSTEM_MESSAGE_TOOLS = """You are an assistant that writes Lean 4 code. You have access to a tool that can check whether your code is valid using the Lean proof assistant.
 
 You can:
 1. Write Lean 4 code and use the check_lean_code function to verify it
@@ -36,17 +36,13 @@ You can:
 3. Make modifications based on the feedback
 4. Try again with updated code
 
-When you have a final answer:
-- If successful, output the final valid Lean code wrapped in <Result> tags
-- If unsuccessful after {max_attempts} attempts, output "FAIL" followed by your best attempt wrapped in <Result> tags
-
 If you believe you can directly solve the task given by the request:
 1. Write initial code based on the request
 2. Call check_lean_code to verify it
 3. If there are errors, analyze them and make modifications
 4. Continue this loop until either:
-   - The code is valid (output with <Result> tags)
-   - You determine you cannot fix the issues (output "FAIL" and best attempt)
+   - The code is valid
+   - You determine you cannot fix the issues
 
 If you believe the task is more complex and would benefit from a step by step approach:
 1. Start with a proof sketch containing `sorry` placeholders.
@@ -57,6 +53,7 @@ If you believe the task is more complex and would benefit from a step by step ap
 You may import libraries as needed. If you are unsure about which particular Mathlib import contains what you need, you may `import Mathlib` to import all of Mathlib.
 
 If you get stuck trying to solve a subgoal, try some of the following. Some of these may require Mathlib.
+
 You are free to use tactics and commands that elicit suggestions from Lean, then call check_lean_code to get the suggestions. 
 - `exact?` looks for tactics/theorems that exactly closes the current goal
 - `apply?` looks for tactics/theorems that may be applicable to the current goal
@@ -74,6 +71,11 @@ You may also try the following tactics for closing goals, which might not have b
 - `omega` can close goals using integer and natural number arithmetic
 - `simp_all` is a stronger version of `simp [*] at *` where the hypotheses and target are simplified multiple times until no simplification is applicable.
 - `bv_decide` can close goals involving booleans and bit vectors
+"""
+
+SYSTEM_MESSAGE_OUTPUT="""When you have a final answer:
+- If successful, output the final valid Lean code wrapped in <Result> tags
+- If unsuccessful after {max_attempts} attempts, output "FAIL" followed by your best attempt wrapped in <Result> tags
 
 Example successful output:
 <Result>
@@ -89,6 +91,7 @@ theorem almost_right (P : Prop) : P → P :=
 sorry  -- Could not complete proof
 </Result>"""
 
+
 async def interactive_lean_check(
     proof_request: str,
     model: str = models['sonnet'],
@@ -103,7 +106,12 @@ async def interactive_lean_check(
     Interactively work with an LLM to generate valid Lean code, allowing for
     multiple attempts based on feedback.
     """
-    if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE.format(max_attempts=max_attempts)}]
+    
+    if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE_TOOLS+SYSTEM_MESSAGE_OUTPUT.format(max_attempts=max_attempts)}]
+    elif SYSTEM_MESSAGE_TOOLS not in [m['content'] for m in messages]:
+        sys_msgs = [m for m in messages if m['role']=='system']
+        other_msgs=[m for m in messages if m['role']!='system']
+        messages=sys_msgs+ [{"role": "system", "content": SYSTEM_MESSAGE_TOOLS}] +other_msgs
 
     msg=f"{proof_request}"
     if len(prefix)>0:
@@ -184,6 +192,7 @@ async def interactive_lean_check(
                 attempts.append({
                     "code": args["code"],
                     "result": result,
+                    "thought": message_content,
                     "is_final": False
                 })
                 
@@ -263,6 +272,17 @@ def create_lean_check_function() -> Dict[str, Any]:
       }
     }
 
+def extract_imports(code: str):
+    lines=str.splitlines(keepends=True)
+    imports=[]
+    rest=''
+    for ln in lines:
+        if ln.startswith('import'):
+            imports.append(ln.split()[1])
+        else:
+            rest+=ln
+    return imports, rest
+
 def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
     """
     Sends code to the Lean executable and returns the results.
@@ -311,8 +331,9 @@ def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
                 raise LeanToolException("Failed to parse Lean JSON output")
         #extract goals from sorrys
         if success and "sorry" in output:
-            server=Server()     #Server(project_path=".")
-            states = server.load_sorry(code)
+            imports, rest=extract_imports(code)
+            server=Server(imports=['Init']+imports)     #Server(project_path=".")
+            states = server.load_sorry(rest)
             output += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
         return {
             "success": success,

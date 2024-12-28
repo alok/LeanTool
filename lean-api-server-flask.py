@@ -2,12 +2,13 @@ from flask import Flask, request, jsonify, Response
 import asyncio
 from leantool import interactive_lean_check, models
 import json
+import io
 from datetime import datetime
 from functools import partial
 
 app = Flask(__name__)
 
-def create_chat_completion_response(result):
+def create_chat_completion_response(result, verbose=True):
     """Convert lean tool result into OpenAI-compatible response format"""
     if not result.get("messages"):
         return {
@@ -29,8 +30,34 @@ def create_chat_completion_response(result):
             }
         }
     
-    last_assistant_msg = assistant_msgs[-1]
-    print (last_assistant_msg)
+    if assistant_msgs[-1]["tool_calls"]:
+        out_msg = {"role": 'assistant', 'content': ''} 
+    else:
+        out_msg = assistant_msgs[-1]
+
+
+    if verbose:
+            attf=io.StringIO()
+            print("\nAttempts:",file=attf)
+            for i, attempt in enumerate(result["attempts"], 1):
+                print(f"\nAttempt {i}:",file=attf)
+                if "thought" in attempt:
+                    print("Thought:\n"+attempt['thought'],file=attf)
+                if "code" in attempt:
+                    print("Code:",file=attf)
+                    print("```\n"+attempt["code"]+"\n```\n",file=attf)
+                    if "result" in attempt:
+                        print("Success:", attempt["result"]["success"], file=attf)
+                        print("Output:", attempt["result"]["output"], file=attf)
+                        if attempt["result"]["error"]:
+                            print("Error:", attempt["result"]["error"], file=attf)
+                elif "error" in attempt:
+                    print("Error:", attempt["error"],file=attf)
+
+            out_msg['content']=attf.getvalue()+out_msg['content']
+    elif out_msg['content']=='': out_msg['content'] = assistant_msgs[-1]['content']
+
+    print (out_msg)
     
     response = {
         "id": f"chatcmpl-{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -40,7 +67,7 @@ def create_chat_completion_response(result):
         "choices": [
             {
                 "index": 0,
-                "message": last_assistant_msg,
+                "message": out_msg,
                 "finish_reason": "stop"
             }
         ],

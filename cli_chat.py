@@ -65,11 +65,14 @@ async def chat_loop():
             print("\nAttempts:")
             for i, attempt in enumerate(result["attempts"], 1):
                 print(f"\nAttempt {i}:")
+                if "thought" in attempt:
+                    print("Thought:\n"+attempt['thought'])
                 if "code" in attempt:
                     print("Code:")
                     print(attempt["code"])
                     if "result" in attempt:
                         print("Success:", attempt["result"]["success"])
+                        print("Output:", attempt["result"]["output"])
                         if attempt["result"]["error"]:
                             print("Error:", attempt["result"]["error"])
                 elif "error" in attempt:
