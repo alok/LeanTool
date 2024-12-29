@@ -12,11 +12,13 @@ from pantograph import Server
 
 import litellm
 litellm.set_verbose=True
+litellm.drop_params=True
 
 models={
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
-  'deepseek':'ollama/hf.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q5_K_M',
+  'deepseek': 'deepseek/deepseek-chat',
+  'deepseek-coder':'ollama/hf.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q5_K_M',
   'deepseek-prover':'ollama/hf.co/deepseek-ai/DeepSeek-Prover-V1.5-RL',
   'o1-mini':'o1-mini',
   'o1-preview':'o1-preview',
