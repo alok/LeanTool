@@ -33,7 +33,7 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 - Set up your LLM model to connect via `LiteLLM`. E.g. for OpenAI, just set the environmental variable `OPENAI_API_KEY`. 
   For Anthropic, `ANTHROPIC_API_KEY`. For local models served by ollama, start by installing ollama. 
   See [Relevant LiteLLM Docs](https://docs.litellm.ai/docs/providers) for more detailed instructions. 
-  The `models` dict in `leantool.py` has some preset models; it has the format short name -> LiteLLM model name. Modify it to have an entry for your model 
+  The `models` dict in `leantool.py` has some preset models; it has the format "short name" : "LiteLLM model name". Modify it to have an entry for your model 
   if you have something different.
 
 ## Files
@@ -45,4 +45,18 @@ Currently used by [FormalizeWithTest](https://github.com/GasStationManager/Forma
 - `lean-api-server-flask.py` OpenAI API compatible proxy server. Can be plugged into any application that takes a OpenAI API model with custom base URL. 
 Has been tested to work with [OpenWebUI](https://openwebui.com/), a fully featured chat interface, 
 and [Continue](https://www.continue.dev/), a VS Code plugin coding assistant.
+
+### Example Set Up with OpenWebUI
+
+- After the Installation steps above, the following command will launch the API server at `http://localhost:8000/v1`:
+```
+poetry run python lean-api-server-flask.py
+```
+
+- Install [OpenWebUI](https://openwebui.com/). If you go with the docker option, you will need to install docker first.
+  Since our proxy server exposes an OpenAI compatible API, you can use 
+the [docker command for installing OpenWebUI with OpenAI API](https://github.com/open-webui/open-webui?tab=readme-ov-file#installation-for-openai-api-usage-only)
+adding the command line option `--add-host host.docker.internal:host-gateway -e OPENAI_API_BASE_URL=http://host.docker.internal:8000/v1`
+- Access OpenWebUI at [http://localhost:3000/](http://localhost:3000/).
+
 
