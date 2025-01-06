@@ -11,7 +11,7 @@ import traceback
 from pantograph import Server
 
 import litellm
-litellm.set_verbose=True
+#litellm.set_verbose=True
 litellm.drop_params=True
 
 models={
@@ -275,7 +275,7 @@ def create_lean_check_function() -> Dict[str, Any]:
     }
 
 def extract_imports(code: str):
-    lines=str.splitlines(keepends=True)
+    lines=code.splitlines(keepends=True)
     imports=[]
     rest=''
     for ln in lines:
@@ -334,8 +334,9 @@ def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
         #extract goals from sorrys
         if success and "sorry" in output:
             imports, rest=extract_imports(code)
-            server=Server(imports=['Init']+imports)     #Server(project_path=".")
-            states = server.load_sorry(rest)
+            server=Server(imports=['Init']+imports, project_path=".")     #Server(project_path=".")
+            units = server.load_sorry(rest)
+            states = [ u.goal_state if u.goal_state is not None else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
             output += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
         return {
             "success": success,
