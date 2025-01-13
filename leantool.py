@@ -11,7 +11,7 @@ import traceback
 from pantograph import Server
 
 import litellm
-#litellm.set_verbose=True
+litellm.set_verbose=True
 litellm.drop_params=True
 
 models={
@@ -59,6 +59,21 @@ If you get stuck trying to solve a subgoal, try some of the following. Some of t
 You are free to use tactics and commands that elicit suggestions from Lean, then call check_lean_code to get the suggestions. 
 - `exact?` looks for tactics/theorems that exactly closes the current goal
 - `apply?` looks for tactics/theorems that may be applicable to the current goal
+- `rw?` looks for rewriting tactics that are applicable at the current goal. For example:
+<example>
+```
+/-- The sum of first n numbers times 2 equals n * (n+1) -/
+theorem sum_first_n_times_2 (n : ℕ) :
+  2 * (∑ i in Finset.range n, (i + 1)) = n * (n + 1) := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    simp [Finset.sum_range_succ]
+    rw?
+```
+And Lean will return suggestions, including `rw [Nat.left_distrib]`
+</example>
+
 - `hint` tries every tactic registered via the register_hint tac command on the current goal, and reports which ones succeed
 - If you know or guess the name of a theorem, you can use `#check` to print its type, e.g. `#check Nat.zero_add`.
 - `#moogle` and `#leansearch` are two search engines that can take natural language queries and return relevant theorems and tactics in Mathlib. E.g. 

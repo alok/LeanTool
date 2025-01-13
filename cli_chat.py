@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 import jsonlines
 from leantool import interactive_lean_check, models
 
@@ -31,11 +32,12 @@ async def chat_loop():
             continue
         if user_input.lower().startswith('model'):
             model=user_input.split()[1]
+            print ('model is set to', model, ': ',models[model])
             continue
         if user_input.lower().startswith('save'):
             fn = user_input.split()[1]
             with jsonlines.open(fn, mode='w') as writer:
-                writer.write_all(messages)
+                writer.write_all([m for m in messages if m is not None])
             continue
         if user_input.lower().startswith('load'):
             fn=user_input.split()[1]
@@ -99,6 +101,7 @@ async def chat_loop():
 
         except Exception as e:
             print(f"Error: {str(e)}")
+            traceback.print_exc()
 
 if __name__ == "__main__":
     asyncio.run(chat_loop())
