@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-litellm = "^1.52.10"
+litellm = "^1.59.9"
 streamlit = "^1.40.1"
 jsonlines = "^4.0.0"
 pantograph = { file = "PyPantograph/dist/pantograph-0.2.23-cp310-cp310-manylinux_2_31_x86_64.whl" }

@@ -22,7 +22,8 @@ models={
   'deepseek-prover':'ollama/hf.co/deepseek-ai/DeepSeek-Prover-V1.5-RL',
   'o1-mini':'o1-mini',
   'o1-preview':'o1-preview',
-  'gpt':'gpt-4o'
+  'gpt':'gpt-4o',
+  'gemini':'gemini/gemini-2.0-flash-exp'
 }
 
 
@@ -251,6 +252,7 @@ async def interactive_lean_check(
                 "error": str(e) + '\n' + traceback.format_exc(),
                 "is_final": False
             })
+            await asyncio.sleep(1)
         if 'anthropic' in model:
             await asyncio.sleep(1)
     # If we've exhausted attempts, return the history
@@ -280,8 +282,7 @@ def create_lean_check_function() -> Dict[str, Any]:
                 },
                 "json_output": {
                     "type": "boolean",
-                    "description": "Whether to get Lean's output in JSON format",
-                    "default": False
+                    "description": "Whether to get Lean's output in JSON format. If omitted, defaults to False"
                 }
             },
             "required": ["code"]
