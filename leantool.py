@@ -22,6 +22,7 @@ models={
   'deepseek-prover':'ollama/hf.co/deepseek-ai/DeepSeek-Prover-V1.5-RL',
   'o1-mini':'o1-mini',
   'o1-preview':'o1-preview',
+  'o3-mini':'o3-mini',
   'gpt':'gpt-4o',
   'gemini':'gemini/gemini-2.0-flash-exp'
 }
@@ -153,12 +154,16 @@ async def interactive_lean_check(
     
     for attempt in range(max_attempts+1):
         try:
+            kwa={}
+            if litellm.supports_parallel_function_calling(model=model) or model not in ['o3-mini']:
+                kwa['parallel_tool_calls']=False
+            if model not in ['o3-mini']:
+                kwa['temperature']=temperature
             response = await acompletion(
                 model=model,
                 messages=messages,
                 tools=tools,
-                parallel_tool_calls=False,
-                temperature=temperature
+                **kwa
             )
             
             # Check if we have a final result
