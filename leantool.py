@@ -151,11 +151,16 @@ async def interactive_lean_check(
     
     tools = [create_lean_check_function()]
     attempts = []
-    
+    try:
+        supp_parallel=litellm.supports_parallel_function_calling(model=model) 
+    except Exception as e:
+        print (e)
+        supp_parallel=False
     for attempt in range(max_attempts+1):
+
         try:
             kwa={}
-            if litellm.supports_parallel_function_calling(model=model) or model not in ['o3-mini']:
+            if supp_parallel or model not in ['o3-mini']:
                 kwa['parallel_tool_calls']=False
             if model not in ['o3-mini']:
                 kwa['temperature']=temperature
