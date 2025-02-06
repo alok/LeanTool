@@ -21,8 +21,9 @@ models={
   'deepseek-coder':'ollama/hf.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q5_K_M',
   'deepseek-prover':'ollama/hf.co/deepseek-ai/DeepSeek-Prover-V1.5-RL',
   'o1-mini':'o1-mini',
-  'o1-preview':'o1-preview',
+  'o1':'o1',
   'o3-mini':'o3-mini',
+  'o3-mini-high':'o3-mini-high',
   'gpt':'gpt-4o',
   'gemini':'gemini/gemini-2.0-flash-exp'
 }
@@ -160,7 +161,10 @@ async def interactive_lean_check(
 
         try:
             kwa={}
-            if supp_parallel or model not in ['o3-mini']:
+            if model == 'o3-mini-high':
+                model='o3-mini'
+                kwa['reasoning_effort']='high'
+            if supp_parallel and model not in ['o3-mini', 'o1']:
                 kwa['parallel_tool_calls']=False
             if model not in ['o3-mini']:
                 kwa['temperature']=temperature
