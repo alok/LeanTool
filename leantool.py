@@ -8,7 +8,6 @@ import tempfile
 import os
 import re
 import traceback
-from pantograph import Server
 
 import litellm
 litellm.set_verbose=True
@@ -33,13 +32,13 @@ class LeanToolException(Exception):
     """Custom exception for Lean tool errors"""
     pass
 
-SYSTEM_MESSAGE_TOOLS = """You are an assistant that writes Lean 4 code. You have access to a tool that can check whether your code is valid using the Lean proof assistant.
+SYSTEM_MESSAGE_TOOLS = """You are an assistant that writes Lean 4 code. 
+You have access to a tool that can pass your code to be compiled and executed by the Lean proof assistant.
 
-You can:
-1. Write Lean 4 code and use the check_lean_code function to verify it
-2. Analyze the output/errors from Lean
-3. Make modifications based on the feedback
-4. Try again with updated code
+You can use the tool to:
+- Verify that your Lean 4 code is syntactically valid
+- Run your code with test inputs and check the results 
+- Utilize Lean's interative features to return suggestions and/or information that helps you complete the task
 
 If you believe you can directly solve the task given by the request:
 1. Write initial code based on the request
@@ -48,13 +47,17 @@ If you believe you can directly solve the task given by the request:
 4. Continue this loop until either:
    - The code is valid
    - You determine you cannot fix the issues
+"""
 
+SYSTEM_MESSAGE_LOAD_SORRY = """
 If you believe the task is more complex and would benefit from a step by step approach:
 1. Start with a proof sketch containing `sorry` placeholders.
 2. Call check_lean_code. If your code is syntactically correct, the tool will output goal states corresponding to each `sorry`
 3. Replace a `sorry` with a proof or a more refined proof sketch. Call check_lean_code to verify.
 4. Repeat until the code is complete with no `sorry` left
+"""
 
+SYSTEM_MESSAGE_FEATURES = """
 You may import libraries as needed. If you are unsure about which particular Mathlib import contains what you need, you may `import Mathlib` to import all of Mathlib.
 
 If you get stuck trying to solve a subgoal, try some of the following. Some of these may require Mathlib.
@@ -111,6 +114,41 @@ theorem almost_right (P : Prop) : P → P :=
 sorry  -- Could not complete proof
 </Result>"""
 
+def extract_imports(code: str):
+    lines=code.splitlines(keepends=True)
+    imports=[]
+    rest=''
+    for ln in lines:
+        if ln.startswith('import'):
+            imports.append(ln.split()[1])
+        else:
+            rest+=ln
+    return imports, rest
+
+class LeanFeatures:
+    def __init__(self):
+        self.sys_msg = SYSTEM_MESSAGE_FEATURES
+    def process(self, code, result):
+        return result
+
+class LoadSorry:
+    def __init__(self):
+        self.sys_msg = SYSTEM_MESSAGE_LOAD_SORRY
+    def process(self, code, result):
+
+        if result['success'] and "sorry" in result['output']:
+            from pantograph import Server
+            imports, rest=extract_imports(code)
+            server=Server(imports=['Init']+imports, project_path=".")     #Server(project_path=".")
+            units = server.load_sorry(rest)
+            states = [ u.goal_state if u.goal_state is not None else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
+            result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
+        return result
+
+
+default_plugins=[LoadSorry(), LeanFeatures()]
+
+
 
 async def interactive_lean_check(
     proof_request: str,
@@ -120,18 +158,21 @@ async def interactive_lean_check(
     final_check: bool = False,
     prefix: str ='',
     files =[],
+    plugins = default_plugins,
     messages=None
 ) -> Dict[str, Any]:
     """
     Interactively work with an LLM to generate valid Lean code, allowing for
     multiple attempts based on feedback.
     """
-    
-    if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE_TOOLS+SYSTEM_MESSAGE_OUTPUT.format(max_attempts=max_attempts)}]
-    elif SYSTEM_MESSAGE_TOOLS not in [m['content'] for m in messages]:
+    SYSTEM_MESSAGE_INFO=SYSTEM_MESSAGE_TOOLS
+    for p in plugins:
+        SYSTEM_MESSAGE_INFO += p.sys_msg
+    if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE_INFO+SYSTEM_MESSAGE_OUTPUT.format(max_attempts=max_attempts)}]
+    elif SYSTEM_MESSAGE_INFO not in [m['content'] for m in messages]:
         sys_msgs = [m for m in messages if m['role']=='system']
         other_msgs=[m for m in messages if m['role']!='system']
-        messages=sys_msgs+ [{"role": "system", "content": SYSTEM_MESSAGE_TOOLS}] +other_msgs
+        messages=sys_msgs+ [{"role": "system", "content": SYSTEM_MESSAGE_INFO}] +other_msgs
 
     msg=f"{proof_request}"
     if len(prefix)>0:
@@ -218,7 +259,8 @@ async def interactive_lean_check(
                 args = json.loads(function_call.function.arguments)
                 result = check_lean_code(
                     code=prefix+args["code"],
-                    json_output=args.get("json_output", False)
+                    json_output=args.get("json_output", False),
+                    plugins=plugins
                 )
                 
                 attempts.append({
@@ -304,18 +346,8 @@ def create_lean_check_function() -> Dict[str, Any]:
       }
     }
 
-def extract_imports(code: str):
-    lines=code.splitlines(keepends=True)
-    imports=[]
-    rest=''
-    for ln in lines:
-        if ln.startswith('import'):
-            imports.append(ln.split()[1])
-        else:
-            rest+=ln
-    return imports, rest
 
-def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
+def check_lean_code(code: str, json_output: bool = False, plugins = default_plugins) -> Dict[str, Any]:
     """
     Sends code to the Lean executable and returns the results.
     
@@ -361,19 +393,17 @@ def check_lean_code(code: str, json_output: bool = False) -> Dict[str, Any]:
                 output = json.loads(output)
             except json.JSONDecodeError:
                 raise LeanToolException("Failed to parse Lean JSON output")
-        #extract goals from sorrys
-        if success and "sorry" in output:
-            imports, rest=extract_imports(code)
-            server=Server(imports=['Init']+imports, project_path=".")     #Server(project_path=".")
-            units = server.load_sorry(rest)
-            states = [ u.goal_state if u.goal_state is not None else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
-            output += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
-        return {
+        
+        result = {
             "success": success,
             "output": output,
             "error": result.stderr if not success else None
         }
-        
+        for p in plugins:
+            if hasattr(p, 'process'):
+                result=p.process(code, result)
+        return result
+
     except subprocess.CalledProcessError as e:
         raise LeanToolException(f"Error running Lean: {str(e)}")
     except Exception as e:
