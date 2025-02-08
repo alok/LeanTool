@@ -31,7 +31,8 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 - `poetry install`
 - Install Mathlib as needed
 - Set up your LLM model to connect via `LiteLLM`. E.g. for OpenAI, just set the environmental variable `OPENAI_API_KEY`. 
-  For Anthropic, `ANTHROPIC_API_KEY`. For local models served by ollama, start by installing ollama. 
+  For Anthropic, `ANTHROPIC_API_KEY`. If you want to try many different models, sign  up for an [OpenRouter](https://openrouter.ai/)
+  API key and set `OPENROUTER_API_KEY`. For local models served by ollama, start by installing ollama. 
   See [Relevant LiteLLM Docs](https://docs.litellm.ai/docs/providers) for more detailed instructions. 
   The `models` dict in `leantool.py` has some preset models; it has the format "short name" : "LiteLLM model name". Modify it to have an entry for your model 
   if you have something different.

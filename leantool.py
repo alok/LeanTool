@@ -16,6 +16,8 @@ litellm.drop_params=True
 models={
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
+  'qwen-max':'openrouter/qwen/qwen-max',
+  'grok':'openrouter/x-ai/grok-2-1212',
   'deepseek': 'deepseek/deepseek-chat',
   'deepseek-coder':'ollama/hf.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q5_K_M',
   'deepseek-prover':'ollama/hf.co/deepseek-ai/DeepSeek-Prover-V1.5-RL',
@@ -24,7 +26,8 @@ models={
   'o3-mini':'o3-mini',
   'o3-mini-high':'o3-mini-high',
   'gpt':'gpt-4o',
-  'gemini':'gemini/gemini-2.0-flash-exp'
+  'gemini':'gemini/gemini-2.0-flash-exp',
+  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp'
 }
 
 
