@@ -40,7 +40,8 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 ## Files
 
 - `leantool.py` Python library. Simply import the file and call `interactive_lean_check` to invoke the feedback loop.
-Currently used by [FormalizeWithTest](https://github.com/GasStationManager/FormalizeWithTest) autoformalization project.
+Currently used by [FormalizeWithTest](https://github.com/GasStationManager/FormalizeWithTest) autoformalization project,
+and [WakingUp](https://github.com/GasStationManager/WakingUp) experiments on hallucination  detection.
 - `cli_chat.py` command line chat interface.
 - `app.py` Streamlit chat interface.
 - `lean-api-server-flask.py` OpenAI API compatible proxy server. Can be plugged into any application that takes a OpenAI API model with custom base URL. 
