@@ -19,6 +19,7 @@ models={
   'qwen-max':'openrouter/qwen/qwen-max',
   'grok':'openrouter/x-ai/grok-2-1212',
   'deepseek': 'deepseek/deepseek-chat',
+  'r1': 'deepseek/deepseek-reasoner',
   'deepseek-coder':'ollama/hf.co/bartowski/DeepSeek-Coder-V2-Lite-Instruct-GGUF:Q5_K_M',
   'deepseek-prover':'ollama/hf.co/deepseek-ai/DeepSeek-Prover-V1.5-RL',
   'o1-mini':'o1-mini',
@@ -45,11 +46,15 @@ You can use the tool to:
 
 If you believe you can directly solve the task given by the request:
 1. Write initial code based on the request
-2. Call check_lean_code to verify it
+2. Invoke the tool to verify it
 3. If there are errors, analyze them and make modifications
 4. Continue this loop until either:
    - The code is valid
    - You determine you cannot fix the issues
+"""
+
+SYSTEM_MESSAGE_PLAIN_TEXT = """You may invoke the tool by enclosing your Lean 4 code in <Try> ... </Try> tags.
+Your code inside the <Try> tags will be executed by Lean and outputs including error messages will be shown to you in the next user message.
 """
 
 SYSTEM_MESSAGE_LOAD_SORRY = """
@@ -162,13 +167,18 @@ async def interactive_lean_check(
     prefix: str ='',
     files =[],
     plugins = default_plugins,
+    plain_text_mode = False,
     messages=None
 ) -> Dict[str, Any]:
     """
     Interactively work with an LLM to generate valid Lean code, allowing for
     multiple attempts based on feedback.
     """
+    if model in ['/deepseek/deepseek-reasoner']:
+        plain_text_mode=True
     SYSTEM_MESSAGE_INFO=SYSTEM_MESSAGE_TOOLS
+    if plain_text_mode:
+        SYSTEM_MESSAGE_INFO += SYSTEM_MESSAGE_PLAIN_TEXT
     for p in plugins:
         SYSTEM_MESSAGE_INFO += p.sys_msg
     if not messages: messages=[{"role": "system", "content": SYSTEM_MESSAGE_INFO+SYSTEM_MESSAGE_OUTPUT.format(max_attempts=max_attempts)}]
@@ -205,6 +215,8 @@ async def interactive_lean_check(
 
         try:
             kwa={}
+            if not plain_text_mode:
+                kwa['tools']=tools
             if model == 'o3-mini-high':
                 model='o3-mini'
                 kwa['reasoning_effort']='high'
@@ -215,7 +227,6 @@ async def interactive_lean_check(
             response = await acompletion(
                 model=model,
                 messages=messages,
-                tools=tools,
                 **kwa
             )
             
@@ -258,8 +269,13 @@ async def interactive_lean_check(
                     }
             
             # If we have a function call, execute it and continue the conversation
-            if function_call:
-                args = json.loads(function_call.function.arguments)
+            if function_call or (plain_text_mode and message_content and '<Try>' in message_content):
+                if function_call:
+                    args = json.loads(function_call.function.arguments)
+                else:
+                    match = re.search(r"<Try>(.*?)</Try>", message_content, re.DOTALL)
+
+                    args = {'code': match.group(1).strip()}
                 result = check_lean_code(
                     code=prefix+args["code"],
                     json_output=args.get("json_output", False),
@@ -283,12 +299,21 @@ async def interactive_lean_check(
                 #        "arguments": json.dumps(args)
                 #    }
                 #})
-                messages.append({
+                if plain_text_mode:
+                  output=f"Given your code, Lean outputs the following:\n{result['output']}"
+                  if result['error']:
+                    output+=f"\nError message:\n{result['error']}"
+                  messages.append({
+                    "role": "user",
+                    "content": output 
+                  })
+                else:
+                  messages.append({
                     "tool_call_id": message.tool_calls[0].id,
                     "role": "tool",
                     "name": "check_lean_code",
                     "content": json.dumps(result)
-                })
+                  })
                 
                 continue
             
