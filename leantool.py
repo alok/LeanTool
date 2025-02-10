@@ -168,12 +168,16 @@ async def interactive_lean_check(
     files =[],
     plugins = default_plugins,
     plain_text_mode = False,
+    debug = False,
     messages=None
 ) -> Dict[str, Any]:
     """
     Interactively work with an LLM to generate valid Lean code, allowing for
     multiple attempts based on feedback.
     """
+    if debug:
+        litellm._turn_on_debug()
+
     if model in ['deepseek/deepseek-reasoner']:
         plain_text_mode=True
     SYSTEM_MESSAGE_INFO=SYSTEM_MESSAGE_TOOLS
