@@ -174,7 +174,7 @@ async def interactive_lean_check(
     Interactively work with an LLM to generate valid Lean code, allowing for
     multiple attempts based on feedback.
     """
-    if model in ['/deepseek/deepseek-reasoner']:
+    if model in ['deepseek/deepseek-reasoner']:
         plain_text_mode=True
     SYSTEM_MESSAGE_INFO=SYSTEM_MESSAGE_TOOLS
     if plain_text_mode:
