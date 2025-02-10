@@ -10,6 +10,7 @@ async def chat_loop():
     print("Type 'reset' to reset message history")
     print("Type 'attempts n' to set the max number of calls to lean per turn")
     print("Type 'model name' to set the model")
+    print("Type 'plain_text' to use plain text mode for LeanTool")
     print("Type 'save filename' to save message history")
     print("Type 'load filename' to load a text file to be read by the LLM")
     print("Type 'resume filename' to resume from chat history\n")
@@ -18,6 +19,7 @@ async def chat_loop():
     files=[]
     max_attempts=5
     model='sonnet'
+    plain_text_mode=False
     while True:
         # Get user input
         user_input = input("\nWhat would you like to prove? > ")
@@ -33,6 +35,9 @@ async def chat_loop():
         if user_input.lower().startswith('model'):
             model=user_input.split()[1]
             print ('model is set to', model, ': ',models[model])
+            continue
+        if user_input.lower().strip()=='plain_text':
+            plain_text_mode=True
             continue
         if user_input.lower().startswith('save'):
             fn = user_input.split()[1]
@@ -64,6 +69,7 @@ async def chat_loop():
                 #temperature=0.1,
                 max_attempts=max_attempts,
                 files=files,
+                plain_text_mode=plain_text_mode,
                 messages=messages
             )
             files=[]
