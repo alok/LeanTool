@@ -178,7 +178,7 @@ async def interactive_lean_check(
     if debug:
         litellm._turn_on_debug()
 
-    if model in ['deepseek/deepseek-reasoner']:
+    if model in ['deepseek/deepseek-reasoner','gemini/gemini-2.0-flash-thinking-exp']:
         plain_text_mode=True
     SYSTEM_MESSAGE_INFO=SYSTEM_MESSAGE_TOOLS
     if plain_text_mode:
