@@ -75,7 +75,6 @@ You are free to use tactics and commands that elicit suggestions from Lean, then
 - `apply?` looks for tactics/theorems that may be applicable to the current goal
 - `rw?` looks for rewriting tactics that are applicable at the current goal. For example:
 <example>
-```
 /-- The sum of first n numbers times 2 equals n * (n+1) -/
 theorem sum_first_n_times_2 (n : ℕ) :
   2 * (∑ i in Finset.range n, (i + 1)) = n * (n + 1) := by
@@ -84,18 +83,18 @@ theorem sum_first_n_times_2 (n : ℕ) :
   | succ n ih =>
     simp [Finset.sum_range_succ]
     rw?
-```
+
 And Lean will return suggestions, including `rw [Nat.left_distrib]`
 </example>
 
 - `hint` tries every tactic registered via the register_hint tac command on the current goal, and reports which ones succeed
 - If you know or guess the name of a theorem, you can use `#check` to print its type, e.g. `#check Nat.zero_add`.
 - `#moogle` and `#leansearch` are two search engines that can take natural language queries and return relevant theorems and tactics in Mathlib. E.g. 
-```
+<example>
 example : 3 ≤ 5 := by
   #moogle "If a natural number n is less than m, then the successor of n is less than the successor of m."
   sorry
-```
+</example>
 
 You may also try the following tactics for closing goals, which might not have been in your training data:
 - `aesop` searchs for a proof that closes the goal
@@ -251,6 +250,7 @@ async def interactive_lean_check(
                 match = re.search(r"<Result>(.*?)</Result>", message_content, re.DOTALL)
                 if match:
                     final_code = match.group(1).strip()
+                    final_code = final_code.replace("```lean", "").replace("```", "")
                     if final_check:
                       # Verify the final code works
                       final_result = check_lean_code(final_code)
