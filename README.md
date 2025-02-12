@@ -67,7 +67,12 @@ adding the command line option `--add-host host.docker.internal:host-gateway -e 
 
 - After the API server is running, install Continue as a VS Code extension.  
 Follow the instructions [here](https://docs.continue.dev/customize/model-providers/openai)
-to set up an OpenAI-compatible model by specifying an apiBase url.
-You may provide your API key as `apiKey`.
+to set up an OpenAI-compatible model by specifying an `apiBase` url.
+Set the model name to be the key name of your chosen model in the models dict in `leantool.py`, e.g. "sonnet".
+For the `apiKey` field you may provide your API key for the chosen model.
 
+### Example Set Up with Cline
+
+- Install the Cline VS Code extension. Set the model type to be OpenAI-compatible, and provide the base url.
+Set the model name for your chosen model, e.g. "sonnet", and your API key.
 

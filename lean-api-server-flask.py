@@ -5,6 +5,7 @@ import json
 import io
 from datetime import datetime
 from functools import partial
+import sys
 
 app = Flask(__name__)
 
@@ -237,4 +238,5 @@ def get_model(model_id):
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    port = sys.argv[1] if len(sys.argv)>1 else 8000
+    app.run(host="0.0.0.0", port=port, debug=True)
