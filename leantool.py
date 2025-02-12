@@ -135,18 +135,18 @@ def extract_imports(code: str):
 class LeanFeatures:
     def __init__(self):
         self.sys_msg = SYSTEM_MESSAGE_FEATURES
-    def process(self, code, result):
+    async def process(self, code, result):
         return result
 
 class LoadSorry:
     def __init__(self):
         self.sys_msg = SYSTEM_MESSAGE_LOAD_SORRY
-    def process(self, code, result):
+    async def process(self, code, result):
 
         if result['success'] and "sorry" in result['output']:
             from pantograph import Server
             imports, rest=extract_imports(code)
-            server=Server(imports=['Init']+imports, project_path=".")     #Server(project_path=".")
+            server=await Server.create(imports=['Init']+imports, project_path=".")
             units = server.load_sorry(rest)
             states = [ u.goal_state if u.goal_state is not None else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
             result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
@@ -256,7 +256,7 @@ async def interactive_lean_check(
                     final_code = final_code.replace("```lean", "").replace("```", "")
                     if final_check:
                       # Verify the final code works
-                      final_result = check_lean_code(final_code)
+                      final_result = await check_lean_code(final_code)
                       attempts.append({
                         "code": prefix+final_code,
                         "result": final_result,
@@ -283,7 +283,7 @@ async def interactive_lean_check(
                     match = re.search(r"<Try>(.*?)</Try>", message_content, re.DOTALL)
 
                     args = {'code': match.group(1).strip()}
-                result = check_lean_code(
+                result = await check_lean_code(
                     code=prefix+args["code"],
                     json_output=args.get("json_output", False),
                     plugins=plugins
@@ -382,7 +382,7 @@ def create_lean_check_function() -> Dict[str, Any]:
     }
 
 
-def check_lean_code(code: str, json_output: bool = False, plugins = default_plugins) -> Dict[str, Any]:
+async def check_lean_code(code: str, json_output: bool = False, plugins = default_plugins) -> Dict[str, Any]:
     """
     Sends code to the Lean executable and returns the results.
     
@@ -436,7 +436,7 @@ def check_lean_code(code: str, json_output: bool = False, plugins = default_plug
         }
         for p in plugins:
             if hasattr(p, 'process'):
-                result=p.process(code, result)
+                result=await p.process(code, result)
         return result
 
     except subprocess.CalledProcessError as e:
