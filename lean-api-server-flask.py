@@ -8,6 +8,22 @@ from functools import partial
 
 app = Flask(__name__)
 
+def get_api_key(request):
+    """Extract API key from request headers"""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        print("No Authorization header")
+        return None
+
+    # Handle 'Bearer <key>' format
+    parts = auth_header.split()
+    if len(parts) == 2 and parts[0].lower() == 'bearer':
+        return parts[1]
+    elif len(parts) == 1:
+        return parts[0]
+    
+    raise ValueError("Invalid Authorization header format")
+
 def create_chat_completion_response(result, verbose=True):
     """Convert lean tool result into OpenAI-compatible response format"""
     if not result.get("messages"):
@@ -30,7 +46,7 @@ def create_chat_completion_response(result, verbose=True):
             }
         }
     
-    if assistant_msgs[-1]["tool_calls"]:
+    if assistant_msgs[-1].get("tool_calls",None):
         out_msg = {"role": 'assistant', 'content': ''} 
     else:
         out_msg = assistant_msgs[-1]
@@ -93,6 +109,17 @@ def generate_streaming_response(final_response, model):
 @app.route("/v1/chat/completions", methods=["POST"])
 def chat_completions():
     try:
+        # Get API key first
+        try:
+            api_key = get_api_key(request)
+        except ValueError as e:
+            return jsonify({
+                "error": {
+                    "message": str(e),
+                    "type": "authentication_error",
+                    "code": 401
+                }
+            }), 401
         data = request.json
         
         if not data:
@@ -133,7 +160,8 @@ def chat_completions():
             model=models[model],
             temperature=temperature,
             max_attempts=max_attempts,
-            messages=messages[:-1]  # Pass previous messages for context
+            messages=messages[:-1],  # Pass previous messages for context
+            api_key=api_key
         ))
         
         stream = data.get("stream", False)

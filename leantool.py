@@ -168,7 +168,8 @@ async def interactive_lean_check(
     plugins = default_plugins,
     plain_text_mode = False,
     debug = False,
-    messages=None
+    messages=None,
+    api_key: str = None
 ) -> Dict[str, Any]:
     """
     Interactively work with an LLM to generate valid Lean code, allowing for
@@ -220,6 +221,8 @@ async def interactive_lean_check(
             kwa={}
             if not plain_text_mode:
                 kwa['tools']=tools
+            if api_key:
+                kwa['api_key']=api_key
             if model == 'o3-mini-high':
                 model='o3-mini'
                 kwa['reasoning_effort']='high'

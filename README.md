@@ -44,7 +44,9 @@ Currently used by [FormalizeWithTest](https://github.com/GasStationManager/Forma
 and [WakingUp](https://github.com/GasStationManager/WakingUp) experiments on hallucination  detection.
 - `cli_chat.py` command line chat interface.
 - `app.py` Streamlit chat interface.
-- `lean-api-server-flask.py` OpenAI API compatible proxy server. Can be plugged into any application that takes a OpenAI API model with custom base URL. 
+- `lean-api-server-flask.py` OpenAI API compatible proxy server. Can be plugged into any application that takes a OpenAI API model with custom base URL.
+Can either use the API keys set in the environment variables, or take an API key token in the request,
+which is then passed to the corresponding LLM.
 Has been tested to work with [OpenWebUI](https://openwebui.com/), a fully featured chat interface, 
 and [Continue](https://www.continue.dev/), a VS Code plugin coding assistant.
 
@@ -60,5 +62,12 @@ poetry run python lean-api-server-flask.py
 the [docker command for installing OpenWebUI with OpenAI API](https://github.com/open-webui/open-webui?tab=readme-ov-file#installation-for-openai-api-usage-only)
 adding the command line option `--add-host host.docker.internal:host-gateway -e OPENAI_API_BASE_URL=http://host.docker.internal:8000/v1`
 - Access OpenWebUI at [http://localhost:3000/](http://localhost:3000/).
+
+### Example Set Up with Continue.dev
+
+- After the API server is running, install Continue as a VS Code extension.  
+Follow the instructions [here](https://docs.continue.dev/customize/model-providers/openai)
+to set up an OpenAI-compatible model by specifying an apiBase url.
+You may provide your API key as `apiKey`.
 
 
