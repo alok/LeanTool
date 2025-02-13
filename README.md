@@ -21,6 +21,13 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 - System prompt instructions to utilize Lean features that are likely missing from the LLMs' training data, including interactive commands that elicit suggestions / information from Lean
 - Flexible usage: as python library, as command-line chat interface, or as OpenAI-compatible API server
 
+## API Server Demo
+
+A demo of the OpenAI-compatible API server is up at [http://www.codeproofarena.com:8800/v1](http://www.codeproofarena.com:8800/v1).
+To use it, connect your app to the above URL as the API Base URL, "provider" as OpenAI or OpenAI-compatible,
+"model" as one of the key names in the models dict in [leantool.py](https://github.com/GasStationManager/LeanTool/blob/main/leantool.py),
+and API key as your API key for the chosen model. See below for specific set up details for OpenWebUI, Continue.dev and Cline.
+
 ## Installation
 
 - Install Lean
@@ -48,7 +55,7 @@ and [WakingUp](https://github.com/GasStationManager/WakingUp) experiments on hal
 Can either use the API keys set in the environment variables, or take an API key token in the request,
 which is then passed to the corresponding LLM.
 Has been tested to work with [OpenWebUI](https://openwebui.com/), a fully featured chat interface, 
-and [Continue](https://www.continue.dev/), a VS Code plugin coding assistant.
+and [Continue](https://www.continue.dev/) and [Cline](https://cline.bot/), two VS Code plugin coding assistants.
 
 ### Example Set Up with OpenWebUI
 
