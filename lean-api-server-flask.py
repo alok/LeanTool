@@ -55,7 +55,7 @@ def create_chat_completion_response(result, verbose=True):
 
     if verbose:
             attf=io.StringIO()
-            print("\nAttempts:",file=attf)
+            if len(result['attempts'])>0: print("\nAttempts:",file=attf)
             for i, attempt in enumerate(result["attempts"], 1):
                 print(f"\nAttempt {i}:",file=attf)
                 if "thought" in attempt:
