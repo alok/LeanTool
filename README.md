@@ -19,6 +19,10 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 - Feedback loop that allows the LLM to fix its errors.
 - Uses [Pantograph](https://github.com/lenianiva/PyPantograph/) to extract goal states from `sorry`s.
 - System prompt instructions to utilize Lean features that are likely missing from the LLMs' training data, including interactive commands that elicit suggestions / information from Lean
+- Option to pass code in *plain text mode* instead of as tool calls formatted in JSON. This allows LeanTool
+to be used by models that do not yet support tool/function calls, including
+some reasoning models like Deepseek r1 and Gemini-2-flash-thinking.
+- Plugin system to allow optional features to be included at run time.
 - Flexible usage: as python library, as command-line chat interface, or as OpenAI-compatible API server
 
 ## API Server Demo
