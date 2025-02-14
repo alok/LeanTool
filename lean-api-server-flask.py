@@ -71,7 +71,7 @@ def create_chat_completion_response(result, verbose=True):
                 elif "error" in attempt:
                     print("Error:", attempt["error"],file=attf)
 
-            out_msg['content']=attf.getvalue()+out_msg.get('content', '')
+            out_msg['content']=str(attf.getvalue())+out_msg.get('content', '')
     elif out_msg['content']=='': out_msg['content'] = assistant_msgs[-1]['content']
 
     print (out_msg)
