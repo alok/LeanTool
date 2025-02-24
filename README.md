@@ -77,13 +77,27 @@ adding the command line option `--add-host host.docker.internal:host-gateway -e 
 ### Example Set Up with Continue.dev
 
 - After the API server is running, install Continue as a VS Code extension.  
-Follow the instructions [here](https://docs.continue.dev/customize/model-providers/openai)
+- Follow the instructions [here](https://docs.continue.dev/customize/model-providers/openai)
 to set up an OpenAI-compatible model by specifying an `apiBase` url.
 Set the model name to be the key name of your chosen model in the models dict in `leantool.py`, e.g. "sonnet".
 For the `apiKey` field you may provide your API key for the chosen model.
 
 ### Example Set Up with Cline
 
-- Install the Cline VS Code extension. Set the model type to be OpenAI-compatible, and provide the base url.
+- Install the Cline VS Code extension.
+- Set the model type to be OpenAI-compatible, and provide the base url.
 Set the model name for your chosen model, e.g. "sonnet", and your API key.
+
+### Example Set Up with Aider
+
+- After the API server is running, install [Aider](https://aider.chat/).
+- Connect to the server's models as OpenAI-compatible API models: see [instructions](https://aider.chat/docs/llms/openai-compat.html).
+  E.g. for Mac/Linux:
+```
+export OPENAI_API_BASE=<endpoint for the API server>
+export OPENAI_API_KEY=<key for your chosen model>
+
+# Prefix the model name with openai/
+aider --model openai/sonnet
+```
 
