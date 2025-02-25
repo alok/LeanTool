@@ -13,7 +13,7 @@ Our design goal is to be flexible: easy to plug into automated workflows, but ca
 This is part of a broader effort to create [safe and hallucination-free coding AIs](https://gasstationmanager.github.io/ai/2024/11/04/a-proposal.html). 
 
 
-## Features
+## Overview of Features
 
 - Uses [LiteLLM](https://github.com/BerriAI/litellm) so you can plug in any compatible LLM, from OpenAI and Anthropic APIs to local LLMs hosted via ollama or vLLM.
 - Feedback loop that allows the LLM to fix its errors.
@@ -23,7 +23,7 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 to be used by models that do not yet support tool/function calls, including
 some reasoning models like Deepseek r1 and Gemini-2-flash-thinking.
 - Plugin system to allow optional features to be included at run time.
-- Flexible usage: as python library, as command-line chat interface, or as OpenAI-compatible API server
+- Flexible usage: as python library, as command-line chat interface, as OpenAI-compatible API server, or as [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server.
 
 ## API Server Demo
 
@@ -60,6 +60,9 @@ Can either use the API keys set in the environment variables, or take an API key
 which is then passed to the corresponding LLM.
 Has been tested to work with [OpenWebUI](https://openwebui.com/), a fully featured chat interface, 
 and coding assistants [Continue](https://www.continue.dev/), [Cline](https://cline.bot/), and [Aider](https://aider.chat/).
+
+- `leanmcp.py` [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This exports Lean (and plugins including load_sorry) as a [MCP tool](https://modelcontextprotocol.io/docs/concepts/tools), without the feedback loop. Works with apps that can utilize MCP servers.
+  Has been tested to work with [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview).
 
 ### Example Set Up with OpenWebUI
 
