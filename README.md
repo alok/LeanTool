@@ -104,3 +104,14 @@ export OPENAI_API_KEY=<key for your chosen model>
 aider --model openai/sonnet
 ```
 
+### Example Set Up with Claude Code
+
+- Install [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview)
+- Add leanmcp.py as an mcp server. e.g. in the repo directory:
+
+```
+claude mcp add LeanTool poetry run python leanmcp.py
+poetry shell
+claude  
+```
+
