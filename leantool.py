@@ -147,7 +147,7 @@ class LoadSorry:
             from pantograph import Server
             imports, rest=extract_imports(code)
             server=await Server.create(imports=['Init']+imports, project_path=".")
-            units = server.load_sorry(rest)
+            units =await server.load_sorry_async(rest)
             states = [ u.goal_state if u.goal_state is not None else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
             result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
         return result
