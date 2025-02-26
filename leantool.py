@@ -149,8 +149,8 @@ class LoadSorry:
             imports, rest=extract_imports(code)
             server=await Server.create(imports=['Init']+imports, project_path=".")
             units =await server.load_sorry_async(rest)
-            states = [ u.goal_state if u.goal_state is not None else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
-            result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states])
+            states = [ u.goal_state if u.goal_state is not None or len(u.messages)==0 else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
+            result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states if s])
         return result
 
 
