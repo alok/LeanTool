@@ -14,7 +14,7 @@ litellm.set_verbose=True
 litellm.drop_params=True
 
 models={
-  'sonnet37':'anthropic/clude-3-7-sonnet-20250219',
+  'sonnet37':'anthropic/claude-3-7-sonnet-20250219',
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
   'qwen-max':'openrouter/qwen/qwen-max',
