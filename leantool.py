@@ -210,6 +210,12 @@ async def interactive_lean_check(
     ]
     
     tools = [create_lean_check_function()]
+    tool_plugin={}
+    for p in plugins:
+        if hasattr(p, 'tool_def'):
+            tools.append(p.tool_def())
+            tool_plugin[p.tool_name] = p
+
     attempts = []
     try:
         supp_parallel=litellm.supports_parallel_function_calling(model=model) 
@@ -284,19 +290,24 @@ async def interactive_lean_check(
                     match = re.search(r"<Try>(.*?)</Try>", message_content, re.DOTALL)
 
                     args = {'code': match.group(1).strip()}
-                result = await check_lean_code(
+                if function_call.function.name == 'check_lean_code' or plain_text_mode:
+                  result = await check_lean_code(
                     code=prefix+args["code"],
                     json_output=args.get("json_output", False),
                     plugins=plugins
-                )
+                  )
                 
-                attempts.append({
+                  attempts.append({
                     "code": args["code"],
                     "result": result,
                     "thought": message_content,
                     "is_final": False
-                })
-                
+                  })
+                else:
+                  p=tool_plugin.get(function_call.function.name)
+                  if p:
+                    result = await p.tool_function(**args)
+
                 # Add the result to the conversation
                 messages.append(message.model_dump())
                 #{
@@ -319,7 +330,7 @@ async def interactive_lean_check(
                   messages.append({
                     "tool_call_id": message.tool_calls[0].id,
                     "role": "tool",
-                    "name": "check_lean_code",
+                    "name": function_call.function.name,
                     "content": json.dumps(result)
                   })
                 
