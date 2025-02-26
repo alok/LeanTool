@@ -14,6 +14,7 @@ litellm.set_verbose=True
 litellm.drop_params=True
 
 models={
+  'sonnet37':'anthropic/clude-3-7-sonnet-20250219',
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
   'qwen-max':'openrouter/qwen/qwen-max',
@@ -426,9 +427,8 @@ async def check_lean_code(code: str, json_output: bool = False, plugins = defaul
         if json_output and output:
             try:
                 output = json.loads(output)
-            except json.JSONDecodeError:
-                raise LeanToolException("Failed to parse Lean JSON output")
-        
+            except json.JSONDecodeError as err:
+                print(f"Failed to parse Lean JSON output: {err}.\n Keeping output as string.")
         result = {
             "success": success,
             "output": output,
