@@ -133,6 +133,9 @@ def extract_imports(code: str):
             rest+=ln
     return imports, rest
 
+def strip_reasoning(messages):
+    return [{k:v for k,v in m.items() if k!='reasoning_content'} for m in messages]
+
 class LeanFeatures:
     def __init__(self):
         self.sys_msg = SYSTEM_MESSAGE_FEATURES
@@ -239,7 +242,7 @@ async def interactive_lean_check(
                 kwa['temperature']=temperature
             response = await acompletion(
                 model=model,
-                messages=messages,
+                messages=strip_reasoning(messages),
                 **kwa
             )
             
@@ -290,7 +293,7 @@ async def interactive_lean_check(
                     match = re.search(r"<Try>(.*?)</Try>", message_content, re.DOTALL)
 
                     args = {'code': match.group(1).strip()}
-                if function_call.function.name == 'check_lean_code' or plain_text_mode:
+                if (function_call and function_call.function.name == 'check_lean_code') or plain_text_mode:
                   result = await check_lean_code(
                     code=prefix+args["code"],
                     json_output=args.get("json_output", False),
@@ -348,8 +351,12 @@ async def interactive_lean_check(
                         "attempts": attempts,
                         "messages": messages
                 }
-
-            
+            else:
+                tool_ins="Enclose your code in <Try> </Try> tags" if plain_text_mode else "Call the provided tool" 
+                messages.append({
+                    'role': 'user',
+                    'content': f"To try your code with Lean, {tool_ins}. To finish with the final answer, enclose your final code with <Result> </Result>."
+                })
         except Exception as e:
             attempts.append({
                 "error": str(e) + '\n' + traceback.format_exc(),
