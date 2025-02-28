@@ -67,7 +67,7 @@ if __name__ == '__main__':
     parser.add_argument('--host', default='0.0.0.0', help='Host to bind to')
     parser.add_argument('--port', type=int, default=8080, help='Port to listen on')
     args = parser.parse_args()
-    if arg.sse:
+    if args.sse:
         mcp_server = mcp._mcp_server  # noqa: WPS437
 
         # Bind SSE request handling to MCP server
