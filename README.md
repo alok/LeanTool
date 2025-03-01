@@ -113,6 +113,7 @@ aider --model openai/sonnet
 - Can be run in `stdio` mode: e.g. when configuring your app for MCP, fill in the command `poetry run python leanmcp.py`
 - Also serve over the network in `sse` mode: e.g. run `poetry run python leanmcp.py --sse --port 8008`,
   then fill in the URL `http://<your-host-or-ip-address>:8008/sse` in your app's configuration.
+  
 ### Example Set Up with Claude Code
 
 - Install [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview)
@@ -127,4 +128,4 @@ claude
 - Set up the MCP server in Cursor, see [instructions](https://docs.cursor.com/context/model-context-protocol). E.g. for `sse` mode,  run the server with `poetry run python leanmcp.py --sse --port 8008`,
   then in Cursor, go to `Cursor Settings > Features > MCP`, click on the `+ Add New MCP Server` button, and fill in the URL `http://<your-host-or-ip-address>:8008/sse`.
 - Test the set up. You may want to explicitly ask the LLM to use the tool in your prompt. If needed, add additional instructions in the [Rules for AI](https://docs.cursor.com/context/rules-for-ai) setting.
-- Example test prompt: "State a theorem in Lean 4 that n*(n+1) is even, for all natural numbers n. Write `sorry` in place of the proof. Pass the code to the provided tool to check for syntax, and show me its output". Cursor will show the MCP tool call; you may need to click the `approve` button.
+- Example test prompt: "State a theorem in Lean 4 that n*(n+1) is even, for all natural numbers n. Write `sorry` in place of the proof. Pass the code to the provided tool to check for syntax, and show me its output". Cursor will show the MCP tool call; you may need to click the `Run tool` button to approve the call.
