@@ -1,6 +1,6 @@
 # LeanTool: Helping LLMs Be Better at Lean
 
-LeanTool is a simple utility that connects LLMs with a "Code Interpreter" for Lean. This is implemented as *tool calls* from the LLM to the Lean executable, hence the name.
+LeanTool is a simple utility that connects LLMs with a "Code Interpreter" for [Lean](https://lean-lang.org/). This is implemented as *tool calls* from the LLM to the Lean executable, hence the name.
 
 Current LLMs often have trouble with outputing code with correct Lean 4 syntax, due to the recent rapid changes in the Lean language and its libraries. By allowing LLMs to talk directly to Lean, 
 they are given opportunities to fix their mistakes.
@@ -23,7 +23,7 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 to be used by models that do not yet support tool/function calls, including
 some reasoning models like Deepseek r1 and Gemini-2-flash-thinking.
 - Plugin system to allow optional features to be included at run time.
-- Flexible usage: as python library, as command-line chat interface, as OpenAI-compatible API server, or as [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server.
+- Flexible usage: as python library, as command-line chat interface, as OpenAI-compatible API server, or as [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. Supports a wide range of coding assistants that can utilize custom OpenAI-compatible APIs and/or MCP servers, including Cursor, Aider, Cline, and Claude Code.
 
 ## API Server Demo
 
@@ -108,10 +108,10 @@ aider --model openai/sonnet
 ```
 
 ## Model Context Protocol (MCP) Server
-- `leanmcp.py` is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This exports Lean (and plugins including load_sorry) as a [MCP tool](https://modelcontextprotocol.io/docs/concepts/tools), without the feedback loop. Works with apps that can utilize MCP servers, and are able to manage the feedback loop within the app.
+- `leanmcp.py` is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This exports Lean (and plugins including load_sorry) as a [MCP tool](https://modelcontextprotocol.io/docs/concepts/tools), without the LLM and the feedback loop. Works with apps that can utilize MCP servers, and are able to manage the feedback loop within the app.
   Has been tested to work with [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview), [Cursor](https://www.cursor.com/) and [Goose](https://github.com/block/goose).
 - Can be run in `stdio` mode: e.g. when configuring your app for MCP, fill in the command `poetry run python leanmcp.py`
-- Also serve over the network in `sse` mode: e.g. run `poetry run python leanmcp.py --sse --port 8008`,
+- Can also serve over the network in `sse` mode: e.g. run `poetry run python leanmcp.py --sse --port 8008`,
   then fill in the URL `http://<your-host-or-ip-address>:8008/sse` in your app's configuration.
   
 ### Example Set Up with Claude Code
