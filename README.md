@@ -1,8 +1,8 @@
-# LeanTool
+# LeanTool: Helping LLMs Be Better at Lean
 
-A simple utility that connects LLMs with a "Code Interpreter" for Lean. This is implemented as *tool calls* from the LLM to the Lean executable, hence the name.
+LeanTool is a simple utility that connects LLMs with a "Code Interpreter" for Lean. This is implemented as *tool calls* from the LLM to the Lean executable, hence the name.
 
-Current LLMs often have trouble with outputing correct Lean 4 syntax, due to the recent rapid changes in Lean. By allowing LLMs to talk directly to Lean, 
+Current LLMs often have trouble with outputing code with correct Lean 4 syntax, due to the recent rapid changes in the Lean language and its libraries. By allowing LLMs to talk directly to Lean, 
 they are given opportunities to fix their mistakes.
 Furthermore, Lean being an interactive theorem prover,
 there are many interactive features that are not well represented in training data. 
@@ -17,7 +17,7 @@ This is part of a broader effort to create [safe and hallucination-free coding A
 
 - Uses [LiteLLM](https://github.com/BerriAI/litellm) so you can plug in any compatible LLM, from OpenAI and Anthropic APIs to local LLMs hosted via ollama or vLLM.
 - Feedback loop that allows the LLM to fix its errors.
-- Uses [Pantograph](https://github.com/lenianiva/PyPantograph/) to extract goal states from `sorry`s.
+- Uses [Pantograph](https://github.com/lenianiva/PyPantograph/) to extract goal states from `sorry`s. This facilitates breaking complex proof tasks down into simpler subtasks, e.g. [draft-sketch-prove](https://arxiv.org/abs/2210.12283).
 - System prompt instructions to utilize Lean features that are likely missing from the LLMs' training data, including interactive commands that elicit suggestions / information from Lean
 - Option to pass code in *plain text mode* instead of as tool calls formatted in JSON. This allows LeanTool
 to be used by models that do not yet support tool/function calls, including
@@ -48,21 +48,24 @@ and API key as your API key for the chosen model. See below for specific set up 
   The `models` dict in `leantool.py` has some preset models; it has the format "short name" : "LiteLLM model name". Modify it to have an entry for your model 
   if you have something different.
 
-## Files
+## Python Library and Built-in Interfaces
 
-- `leantool.py` Python library. Simply import the file and call `interactive_lean_check` to invoke the feedback loop.
+- `leantool.py` is the Python library. Simply import the file and call `interactive_lean_check` to invoke the feedback loop.
 Currently used by [FormalizeWithTest](https://github.com/GasStationManager/FormalizeWithTest) autoformalization project,
 and [WakingUp](https://github.com/GasStationManager/WakingUp) experiments on hallucination  detection.
-- `cli_chat.py` command line chat interface.
+- *Plugins* are optional features that users can choose to include at run time. There are a few built-in ones, but you can also implement your own and pass to the `interactive_lean_check` call. Here is a tentative interface design. A plugin is a python object that has the following members:
+  - `sys_msg`: a string that will be attached to the system message
+  - `async def process(self, code, result)`: a method that will be executed after the main Lean executable finishes. Takes in the LLM submitted code, and result a dict that records the results of the processing so far. The method should return the new result dict. 
+- `cli_chat.py` command line chat interface. Simply run `poetry run python cli_chat.py`.
 - `app.py` Streamlit chat interface.
+
+## OpenAI-compatible Proxy Server
 - `lean-api-server-flask.py` OpenAI API compatible proxy server. Can be plugged into any application that takes a OpenAI API model with custom base URL.
 Can either use the API keys set in the environment variables, or take an API key token in the request,
 which is then passed to the corresponding LLM.
 Has been tested to work with [OpenWebUI](https://openwebui.com/), a fully featured chat interface, 
 and coding assistants [Continue](https://www.continue.dev/), [Cline](https://cline.bot/), and [Aider](https://aider.chat/).
 
-- `leanmcp.py` [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This exports Lean (and plugins including load_sorry) as a [MCP tool](https://modelcontextprotocol.io/docs/concepts/tools), without the feedback loop. Works with apps that can utilize MCP servers.
-  Has been tested to work with [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview).
 
 ### Example Set Up with OpenWebUI
 
@@ -104,11 +107,14 @@ export OPENAI_API_KEY=<key for your chosen model>
 aider --model openai/sonnet
 ```
 
+## Model Context Protocol (MCP) Server
+- `leanmcp.py` [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This exports Lean (and plugins including load_sorry) as a [MCP tool](https://modelcontextprotocol.io/docs/concepts/tools), without the feedback loop. Works with apps that can utilize MCP servers, and are able to manage the feedback loop within the app.
+  Has been tested to work with [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) and [Goose](https://github.com/block/goose).
+
 ### Example Set Up with Claude Code
 
 - Install [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview)
-- Add leanmcp.py as an mcp server. e.g. in the repo directory:
-
+- Add leanmcp.py as an mcp server. e.g. in the LeanTool repo directory:
 ```
 claude mcp add LeanTool poetry run python leanmcp.py
 poetry shell
