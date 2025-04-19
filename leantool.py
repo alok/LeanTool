@@ -149,10 +149,14 @@ class LoadSorry:
     async def process(self, code, result):
 
         if result['success'] and "sorry" in result['output']:
+            print ("Plugin LoadSorry activated")
             from pantograph import Server
             imports, rest=extract_imports(code)
+            print (f"Creating server. Imports: {imports}")
             server=await Server.create(imports=['Init']+imports, project_path=".")
+            print(f"Server created. Loading sorrys")
             units =await server.load_sorry_async(rest)
+            print("Sorrys loaded")
             states = [ u.goal_state if u.goal_state is not None or len(u.messages)==0 else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
             result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states if s])
         return result

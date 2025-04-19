@@ -8,7 +8,7 @@ package "LeanTool" where
   ]
   -- add any additional package configuration options here
 
-require "leanprover-community" / "mathlib" @ git "v4.15.0"
+require "leanprover-community" / "mathlib" @ git "v4.18.0"
 
 @[default_target]
 lean_lib «LeanTool» where
