@@ -30,7 +30,8 @@ models={
   'gpt':'gpt-4o',
   'gpt45':'openai/gpt-4.5-preview-2025-02-27',
   'gemini':'gemini/gemini-2.0-flash-exp',
-  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp'
+  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp',
+  'gemini-pro':'gemini/gemini-2.5-pro-exp-03-25',
 }
 
 
