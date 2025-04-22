@@ -27,10 +27,12 @@ models={
   'o1':'o1',
   'o3-mini':'o3-mini',
   'o3-mini-high':'o3-mini-high',
+  'o3':'o3',
+  'o4-mini':'o4-mini',
   'gpt':'gpt-4o',
   'gpt45':'openai/gpt-4.5-preview-2025-02-27',
-  'gemini':'gemini/gemini-2.0-flash-exp',
-  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp',
+  'gemini-flash':'gemini/gemini-2.0-flash-exp',
+  'gemini-flash-thinking':'gemini/gemini-2.0-flash-thinking-exp',
   'gemini-pro':'gemini/gemini-2.5-pro-exp-03-25',
 }
 
