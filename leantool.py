@@ -18,6 +18,7 @@ models={
   'sonnet':'anthropic/claude-3-5-sonnet-20241022',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
   'qwen-max':'openrouter/qwen/qwen-max',
+  'qwq': 'openrouter/qwen/qwq-32b',
   'grok':'openrouter/x-ai/grok-2-1212',
   'deepseek': 'deepseek/deepseek-chat',
   'r1': 'deepseek/deepseek-reasoner',
@@ -30,7 +31,9 @@ models={
   'gpt':'gpt-4o',
   'gpt45':'openai/gpt-4.5-preview-2025-02-27',
   'gemini':'gemini/gemini-2.0-flash-exp',
-  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp'
+  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp',
+  'codestral':'openrouter/mistralai/codestral-2501',
+  'mistral-large':'openrouter/mistralai/mistral-large-2411'
 }
 
 
@@ -55,7 +58,7 @@ If you believe you can directly solve the task given by the request:
    - You determine you cannot fix the issues
 """
 
-SYSTEM_MESSAGE_PLAIN_TEXT = """You may invoke the tool by enclosing your Lean 4 code in <Try> ... </Try> tags.
+SYSTEM_MESSAGE_PLAIN_TEXT = """You may invoke the tool by enclosing your Lean 4 code in <Try> ... </Try> tags, without any <Result> </Result> tags in your output.
 Your code inside the <Try> tags will be executed by Lean and outputs including error messages will be shown to you in the next user message.
 """
 
@@ -183,7 +186,7 @@ async def interactive_lean_check(
     if debug:
         litellm._turn_on_debug()
 
-    if model in ['deepseek/deepseek-reasoner','gemini/gemini-2.0-flash-thinking-exp']:
+    if model in ['deepseek/deepseek-reasoner','gemini/gemini-2.0-flash-thinking-exp','openrouter/qwen/qwq-32b']:
         plain_text_mode=True
     SYSTEM_MESSAGE_INFO=SYSTEM_MESSAGE_TOOLS
     if plain_text_mode:
