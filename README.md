@@ -34,10 +34,18 @@ and API key as your API key for the chosen model. See below for specific set up 
 
 ## Installation
 
-- Install Lean
+- Install Lean. E.g. for Linux:
+```
+curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
+```
 - Install `poetry`
 - Clone the repository
-- Install [Pantograph](https://github.com/lenianiva/PyPantograph/) by following its instructions. Create the wheel file. 
+- Install [Pantograph](https://github.com/lenianiva/PyPantograph/) by following its instructions. Create the wheel file. E.g.
+```
+git clone --recurse-submodules https://github.com/stanford-centaur/PyPantograph.git
+cd PyPantograph
+poetry build
+```
 - Modify `pyproject.toml` in the LeanTool directory, to ensure the `pantograph` entry points to the correct path and file name to the `.whl` file.
 - `poetry install`
 - Install Mathlib as needed

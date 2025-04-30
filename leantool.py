@@ -28,10 +28,13 @@ models={
   'o1':'o1',
   'o3-mini':'o3-mini',
   'o3-mini-high':'o3-mini-high',
+  'o3':'o3',
+  'o4-mini':'o4-mini',
   'gpt':'gpt-4o',
   'gpt45':'openai/gpt-4.5-preview-2025-02-27',
-  'gemini':'gemini/gemini-2.0-flash-exp',
-  'gemini-thinking':'gemini/gemini-2.0-flash-thinking-exp',
+  'gemini-flash':'gemini/gemini-2.0-flash-exp',
+  'gemini-flash-thinking':'gemini/gemini-2.0-flash-thinking-exp',
+  'gemini-pro':'gemini/gemini-2.5-pro-exp-03-25',
   'codestral':'openrouter/mistralai/codestral-2501',
   'mistral-large':'openrouter/mistralai/mistral-large-2411'
 }
@@ -152,10 +155,14 @@ class LoadSorry:
     async def process(self, code, result):
 
         if result['success'] and "sorry" in result['output']:
+            print ("Plugin LoadSorry activated")
             from pantograph import Server
             imports, rest=extract_imports(code)
+            print (f"Creating server. Imports: {imports}")
             server=await Server.create(imports=['Init']+imports, project_path=".")
+            print(f"Server created. Loading sorrys")
             units =await server.load_sorry_async(rest)
+            print("Sorrys loaded")
             states = [ u.goal_state if u.goal_state is not None or len(u.messages)==0 else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
             result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states if s])
         return result
