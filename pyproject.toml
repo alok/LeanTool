@@ -5,8 +5,6 @@ description = ""
 authors = ["Alok Singh <alokbeniwal@gmail.com>"]
 readme = "README.md"
 
-packages = [{ include = "LeanTool" }, { include = "leantool" }]
-
 [tool.poetry.dependencies]
 python = "^3.10"
 litellm = "^1.61.7"
