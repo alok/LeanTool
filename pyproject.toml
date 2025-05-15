@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-leanmcp = "leanmcp:main"
+leanmcp = "leantool.leanmcp:main"
 leantool-chat = "cli_chat:main"
 leantool-app = "app:main"
 
@@ -25,4 +25,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["leantool"]
-py-modules = ["leanmcp"]
