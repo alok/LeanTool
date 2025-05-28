@@ -15,7 +15,9 @@ litellm.drop_params=True
 
 models={
   'sonnet37':'anthropic/claude-3-7-sonnet-20250219',
-  'sonnet':'anthropic/claude-3-5-sonnet-20241022',
+  'sonnet35':'anthropic/claude-3-5-sonnet-20241022',
+  'sonnet':'anthropic/claude-sonnet-4-20250514',
+  'opus':'anthropic/claude-opus-4-20250514',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
   'qwen-max':'openrouter/qwen/qwen-max',
   'qwq': 'openrouter/qwen/qwq-32b',
