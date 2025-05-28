@@ -15,7 +15,9 @@ litellm.drop_params=True
 
 models={
   'sonnet37':'anthropic/claude-3-7-sonnet-20250219',
-  'sonnet':'anthropic/claude-3-5-sonnet-20241022',
+  'sonnet35':'anthropic/claude-3-5-sonnet-20241022',
+  'sonnet':'anthropic/claude-sonnet-4-20250514',
+  'opus':'anthropic/claude-opus-4-20250514',
   'qwen':'ollama/hf.co/bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:IQ4_XS',
   'qwen-max':'openrouter/qwen/qwen-max',
   'qwq': 'openrouter/qwen/qwq-32b',
@@ -34,7 +36,7 @@ models={
   'gpt45':'openai/gpt-4.5-preview-2025-02-27',
   'gemini-flash':'gemini/gemini-2.0-flash-exp',
   'gemini-flash-thinking':'gemini/gemini-2.0-flash-thinking-exp',
-  'gemini-pro':'gemini/gemini-2.5-pro-exp-03-25',
+  'gemini-pro':'gemini/gemini-2.5-pro-preview-05-06',
   'codestral':'openrouter/mistralai/codestral-2501',
   'mistral-large':'openrouter/mistralai/mistral-large-2411'
 }

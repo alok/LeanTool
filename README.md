@@ -44,6 +44,31 @@ curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf 
 ```
 git clone --recurse-submodules https://github.com/stanford-centaur/PyPantograph.git
 cd PyPantograph
+```
+For the current version of Pantograph (0.3.1), you'll need to add one line to the file `pyproject.toml` at the end of 
+```
+[tool.poetry]
+include = [
+    { path = "pantograph/pantograph-repl", format = ["sdist", "wheel"] },
+    { path = "pantograph/lean-toolchain", format = ["sdist", "wheel"] },
+]
+```
+to become
+```
+[tool.poetry]
+include = [
+    { path = "pantograph/pantograph-repl", format = ["sdist", "wheel"] },
+    { path = "pantograph/lean-toolchain", format = ["sdist", "wheel"] },
+    { path = "src", format = ["sdist", "wheel"] },
+]
+```
+And then run
+```
+uv sync
+uv build
+```
+For version 0.3.0 and earlier, do
+```
 poetry build
 ```
 - Modify `pyproject.toml` in the LeanTool directory, to ensure the `pantograph` entry points to the correct path and file name to the `.whl` file.
