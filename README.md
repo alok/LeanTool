@@ -162,3 +162,4 @@ claude
   then in Cursor, go to `Cursor Settings > Features > MCP`, click on the `+ Add New MCP Server` button, and fill in the URL `http://<your-host-or-ip-address>:8008/sse`.
 - Test the set up. You may want to explicitly ask the LLM to use the tool in your prompt. If needed, add additional instructions in the [Rules for AI](https://docs.cursor.com/context/rules-for-ai) setting.
 - Example test prompt: "State a theorem in Lean 4 that n*(n+1) is even, for all natural numbers n. Write `sorry` in place of the proof. Pass the code to the provided tool to check for syntax, and show me its output". Cursor will show the MCP tool call; you may need to click the `Run tool` button to approve the call.
+- If a MCP tool call hangs, try restarting Cursor. This is potentially related to the issue documented [here](https://github.com/modelcontextprotocol/python-sdk/issues/423) and [here](https://github.com/getcursor/cursor/issues/2998).
