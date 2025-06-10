@@ -24,6 +24,7 @@ to be used by models that do not yet support tool/function calls, including
 some reasoning models like Deepseek r1 and Gemini-2-flash-thinking.
 - Plugin system to allow optional features to be included at run time.
 - Flexible usage: as python library, as command-line chat interface, as OpenAI-compatible API server, or as [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. Supports a wide range of coding assistants that can utilize custom OpenAI-compatible APIs and/or MCP servers, including Cursor, Aider, Cline, and Claude Code.
+- Experimental Feature: Property-based testing of subgoals, now avaiable as the MCP tool `run_tests`. See [blog](https://gasstationmanager.github.io/ai/2025/05/22/alphabeta-goose.html) [posts](https://gasstationmanager.github.io/ai/2025/06/08/proving-alphabeta.html) for details.  
 
 ## API Server Demo
 
