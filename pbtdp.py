@@ -88,7 +88,7 @@ set_option linter.unusedVariables false
         import os
         
         # Create temporary file with .lean extension
-        with tempfile.NamedTemporaryFile(suffix='.lean', mode='w', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(suffix='.lean', mode='w', encoding='utf-8', delete=False) as temp_file:
             temp_file.write(script)
             temp_path = temp_file.name
             
@@ -258,7 +258,7 @@ async def main():
     sig = ' '.join(args.signature)
     num_tests = args.num_test
     
-    with open(fn) as reader:
+    with open(fn, encoding='utf-8') as reader:
         jo={'function_signature':sig, 'code_solution':reader.read()}
         res=await run_property_testing(jo, num_tests=num_tests)
         print (res)
