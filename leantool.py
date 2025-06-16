@@ -430,7 +430,7 @@ async def check_lean_code(code: str, json_output: bool = False, plugins = defaul
     """
     try:
         # Create temporary file for the Lean code
-        with tempfile.NamedTemporaryFile(suffix='.lean', mode='w', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(suffix='.lean', mode='w', encoding='utf-8', delete=False) as temp_file:
             temp_file.write(code)
             temp_file_path = temp_file.name
         
