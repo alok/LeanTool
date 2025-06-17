@@ -145,15 +145,6 @@ def extract_imports(code: str):
 def strip_reasoning(messages):
     return [{k:v for k,v in m.items() if k!='reasoning_content'} for m in messages]
 
-def result_has_sorry(result):
-    if isinstance(result['output'], str):
-        return 'sorry' in result['output']
-    else:
-        for ln in result['output']:
-            if 'sorry' in ln.get('data', ''): 
-                return True
-        return False
-
 class LeanFeatures:
     def __init__(self):
         self.sys_msg = SYSTEM_MESSAGE_FEATURES
@@ -164,8 +155,8 @@ class LoadSorry:
     def __init__(self):
         self.sys_msg = SYSTEM_MESSAGE_LOAD_SORRY
     async def process(self, code, result):
-        has_sorry =result_has_sorry(result)
-        if result['success'] and has_sorry:
+
+        if result['success'] and "sorry" in result['output']:
             print ("Plugin LoadSorry activated")
             from pantograph import Server
             imports, rest=extract_imports(code)
@@ -175,55 +166,12 @@ class LoadSorry:
             units =await server.load_sorry_async(rest)
             print("Sorrys loaded")
             states = [ u.goal_state if u.goal_state is not None or len(u.messages)==0 else 'Error extracting goal state: '+'\n'.join(u.messages) for u in units]
-            output = f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states if s])
-            if isinstance(result['output'], str):
-                result['output'] += output
-            else:
-                result['output'].append({'goals': output})            
+            result['output'] += f"\nGoal States from sorrys:\n"+"\n\n".join([str(s) for s in states if s])
         return result
 
 
-class SorryHammer:
-    def __init__(self, tactic = 'hammer', greedy=False):
-        self.tactic = tactic
-        self.greedy = greedy
-        self.sys_msg = """
-If the `sorry_hammer` parameter of the check_lean_code tool call is set to True,
-the tool will attempt to replace the first `sorry` in your code with a proof using a hammer tactic.
-If successful, it will return the modified code in the `code` field of the result.
-"""
-    async def process(self, code, result):
-        has_sorry = result_has_sorry(result)
-        if result['success'] and has_sorry:
-            print ("Plugin SorryHammer activated")
-            ham_imp = 'import Hammer\n'
-            if ham_imp not in code:
-                code = ham_imp + code
-            code = code.replace('sorry', self.tactic, 1)
-            new_result = await check_lean_code(code, sorry_hammer=self.greedy)
-            if new_result['success']:
-                print ("SorryHammer succeeded")
-                output = "SorryHammer successfully replaced "
-                if result_has_sorry(new_result):
-                    output += "some sorrys, but some remain."
-                else:
-                    output += "all sorrys."
-                if isinstance(result['output'], str):
-                    result['output'] =  output + '\n' + new_result['output']
-                else:
-                    result['output']=[{'data': output}] + new_result['output']
-                result['code'] = new_result.get('code', code)
-            else:
-                print ("SorryHammer failed")
-                output = "SorryHammer failed to replace the first sorry. The following is Lean's output from the attempt:"
-                if isinstance(result['output'], str):
-                    result['output'] +='\n' + output + '\n' + new_result['output']
-                else:
-                    result['output']+=[{'data': output}] + new_result['output']
-        return result
+default_plugins=[LoadSorry(), LeanFeatures()]
 
-#default_plugins=[LoadSorry(), LeanFeatures()]
-default_plugins=[LeanFeatures(),SorryHammer()]
 
 
 async def interactive_lean_check(
@@ -362,7 +310,6 @@ async def interactive_lean_check(
                   result = await check_lean_code(
                     code=prefix+args["code"],
                     json_output=args.get("json_output", False),
-                    sorry_hammer=args.get("sorry_hammer", False),
                     plugins=plugins
                   )
                 
@@ -459,11 +406,7 @@ def create_lean_check_function() -> Dict[str, Any]:
                 "json_output": {
                     "type": "boolean",
                     "description": "Whether to get Lean's output in JSON format. If omitted, defaults to False"
-                },
-                "sorry_hammer": {
-                    "type": "boolean",
-                    "description": "If True, the tool will attempt to replace the first `sorry` in the code with a proof using a hammer tactic. Defaults to False."
-                },
+                }
             },
             "required": ["code"]
         }
@@ -471,7 +414,7 @@ def create_lean_check_function() -> Dict[str, Any]:
     }
 
 
-async def check_lean_code(code: str, json_output: bool = False, sorry_hammer:bool = False, plugins = default_plugins) -> Dict[str, Any]:
+async def check_lean_code(code: str, json_output: bool = False, plugins = default_plugins) -> Dict[str, Any]:
     """
     Sends code to the Lean executable and returns the results.
     
@@ -514,7 +457,7 @@ async def check_lean_code(code: str, json_output: bool = False, sorry_hammer:boo
         # Parse JSON output if requested and available
         if json_output and output:
             try:
-                output = [json.loads(ln) for ln in output.splitlines() if ln.strip()]
+                output = json.loads(output)
             except json.JSONDecodeError as err:
                 print(f"Failed to parse Lean JSON output: {err}.\n Keeping output as string.")
         result = {
@@ -524,8 +467,7 @@ async def check_lean_code(code: str, json_output: bool = False, sorry_hammer:boo
         }
         for p in plugins:
             if hasattr(p, 'process'):
-                if sorry_hammer or not isinstance(p, SorryHammer):
-                    result=await p.process(code, result)
+                result=await p.process(code, result)
         return result
 
     except subprocess.CalledProcessError as e:
