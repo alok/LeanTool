@@ -11,7 +11,7 @@ package "LeanTool" where
 require Hammer from git "https://github.com/JOSHCLUNE/LeanHammer" @ "main"
 
 
-require "leanprover-community" / "mathlib" @ git "v4.20.0"
+require "leanprover-community" / "mathlib" @ git "v4.20.1"
 
 
 @[default_target]

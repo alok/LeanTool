@@ -222,8 +222,8 @@ If successful, it will return the modified code in the `code` field of the resul
                     result['output']+=[{'data': output}] + new_result['output']
         return result
 
-#default_plugins=[LoadSorry(), LeanFeatures()]
-default_plugins=[LeanFeatures(),SorryHammer()]
+
+default_plugins=[LoadSorry(), LeanFeatures(), SorryHammer()]
 
 
 async def interactive_lean_check(
