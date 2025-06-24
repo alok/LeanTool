@@ -24,7 +24,8 @@ to be used by models that do not yet support tool/function calls, including
 some reasoning models like Deepseek r1 and Gemini-2-flash-thinking.
 - Plugin system to allow optional features to be included at run time.
 - Flexible usage: as python library, as command-line chat interface, as OpenAI-compatible API server, or as [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. Supports a wide range of coding assistants that can utilize custom OpenAI-compatible APIs and/or MCP servers, including Cursor, Aider, Cline, and Claude Code.
-- Experimental Feature: Property-based testing of subgoals, now avaiable as the MCP tool `run_tests`. See [blog](https://gasstationmanager.github.io/ai/2025/05/22/alphabeta-goose.html) [posts](https://gasstationmanager.github.io/ai/2025/06/08/proving-alphabeta.html) for details.  
+- Experimental Feature: property-based testing of subgoals, now avaiable as the MCP tool `run_tests`. See [blog](https://gasstationmanager.github.io/ai/2025/05/22/alphabeta-goose.html) [posts](https://gasstationmanager.github.io/ai/2025/06/08/proving-alphabeta.html) for details.  
+- Experimental Feature: the Sorry Hammer: automatically tries to prove each hole (`sorry`) with a hammer tactic (LeanHammer by default).
 
 ## API Server Demo
 
@@ -45,36 +46,15 @@ curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf 
 ```
 git clone --recurse-submodules https://github.com/stanford-centaur/PyPantograph.git
 cd PyPantograph
-```
-For the current version of Pantograph (0.3.1), you'll need to add one line to the file `pyproject.toml` at the end of 
-```
-[tool.poetry]
-include = [
-    { path = "pantograph/pantograph-repl", format = ["sdist", "wheel"] },
-    { path = "pantograph/lean-toolchain", format = ["sdist", "wheel"] },
-]
-```
-to become
-```
-[tool.poetry]
-include = [
-    { path = "pantograph/pantograph-repl", format = ["sdist", "wheel"] },
-    { path = "pantograph/lean-toolchain", format = ["sdist", "wheel"] },
-    { path = "src", format = ["sdist", "wheel"] },
-]
-```
-And then run
-```
-uv sync
 uv build
-```
-For version 0.3.0 and earlier, do
-```
-poetry build
 ```
 - Modify `pyproject.toml` in the LeanTool directory, to ensure the `pantograph` entry points to the correct path and file name to the `.whl` file.
 - `poetry install`
-- Install Mathlib as needed
+- Install Mathlib and other Lean dependencies. e.g.
+```
+lake exe cache get
+lake build
+```
 - Set up your LLM model to connect via `LiteLLM`. E.g. for OpenAI, just set the environmental variable `OPENAI_API_KEY`. 
   For Anthropic, `ANTHROPIC_API_KEY`. If you want to try many different models, sign  up for an [OpenRouter](https://openrouter.ai/)
   API key and set `OPENROUTER_API_KEY`. For local models served by ollama, start by installing ollama. 
