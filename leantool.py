@@ -170,8 +170,8 @@ class LoadSorry:
         return result
 
 
-default_plugins=[LoadSorry(), LeanFeatures()]
 
+default_plugins=[LoadSorry(), LeanFeatures(), SorryHammer()]
 
 
 async def interactive_lean_check(
