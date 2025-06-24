@@ -17,7 +17,7 @@ mcp = FastMCP("LeanTool")
 
 
 @mcp.tool()
-async def check_lean (code: str, json_output: bool = False)-> Dict[str, Any]:
+async def check_lean (code: str, json_output: bool = False, sorry_hammer: bool = False)-> Dict[str, Any]:
     """
     Sends code to the Lean executable and returns the results.
     If the code is syntactically correct but contains `sorry`s, 
@@ -26,14 +26,16 @@ async def check_lean (code: str, json_output: bool = False)-> Dict[str, Any]:
     Args:
         code: Lean code to check
         json_output: Whether to get output in JSON format
+        sorry_hammer: If True, the tool will attempt to replace the first `sorry` in the code with a proof using a hammer tactic.
         
     Returns:
         Dictionary containing:
             - success: bool indicating if code checked successfully
             - output: string or parsed JSON containing Lean's output
             - error: string containing error message if any
+            - code: the modified code (if using sorry_hammer and the hammer was successful)
     """
-    return await check_lean_code (code, json_output)
+    return await check_lean_code (code, json_output, sorry_hammer)
 
 @mcp.tool()
 async def run_tests (code: str, signature: str, num_tests: int=20) -> Dict[str,Any]:
