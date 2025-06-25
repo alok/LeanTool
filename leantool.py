@@ -185,7 +185,7 @@ class LoadSorry:
 
 class SorryHammer:
     def __init__(self, tactic = 'hammer', greedy=False):
-        self.tactic = tactic
+        self.tactic = tactic if isinstance(tactic, str) else "first | " + " | ".join(['('+t+')' for t in tactic])
         self.greedy = greedy
         self.sys_msg = """
 If the `sorry_hammer` parameter of the check_lean_code tool call is set to True,
