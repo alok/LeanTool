@@ -50,9 +50,10 @@ uv build
 ```
 - Modify `pyproject.toml` in the LeanTool directory, to ensure the `pantograph` entry points to the correct path and file name to the `.whl` file.
 - `poetry install`
-- Install Mathlib and other Lean dependencies. e.g.
+- Install Mathlib and other Lean dependencies, e.g.
 ```
 lake exe cache get
+lake update
 lake build
 ```
 - Set up your LLM model to connect via `LiteLLM`. E.g. for OpenAI, just set the environmental variable `OPENAI_API_KEY`. 
