@@ -184,21 +184,22 @@ class LoadSorry:
 
 
 class SorryHammer:
-    def __init__(self, tactic = 'hammer', greedy=False):
+    def __init__(self, tactic = 'hammer', imports = 'import Hammer\n', greedy=False, try_negation=True):
         self.tactic = tactic if isinstance(tactic, str) else "first | " + " | ".join(['('+t+')' for t in tactic])
+        self.imports = imports
         self.greedy = greedy
-        self.sys_msg = """
+        self.sys_msg = f"""
 If the `sorry_hammer` parameter of the check_lean_code tool call is set to True,
-the tool will attempt to replace the first `sorry` in your code with a proof using a hammer tactic.
+the tool will attempt to replace the first `sorry` in your code with a proof using a hammer tactic `{self.tactic}`.
 If successful, it will return the modified code in the `code` field of the result.
+Alternatively, without setting the `sorry_hammer` flag, you could manually replace a `sorry` with `{self.tactic}`, after including the imports `{self.imports}` in your code.
 """
     async def process(self, code, result):
         has_sorry = result_has_sorry(result)
         if result['success'] and has_sorry:
             print ("Plugin SorryHammer activated")
-            ham_imp = 'import Hammer\n'
-            if ham_imp not in code:
-                code = ham_imp + code
+            if self.imports not in code:
+                code = self.imports + code
             code = code.replace('sorry', self.tactic, 1)
             new_result = await check_lean_code(code, sorry_hammer=self.greedy)
             if new_result['success']:
