@@ -179,7 +179,8 @@ class LoadSorry:
             if isinstance(result['output'], str):
                 result['output'] += output
             else:
-                result['output'].append({'goals': output})            
+                result['output'].append({'goals': output})
+            server._close()
         return result
 
 
