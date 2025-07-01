@@ -11,6 +11,7 @@ open SampleableExt
 
 /--
 Print (at most) 10 samples of a given type to stdout for debugging.
+Output examples are separated by two newlines.
 -/
 def printSamples2 {t : Type u} [Repr t] (g : Gen t) : IO PUnit := do
 -- TODO: this should be a global instance
