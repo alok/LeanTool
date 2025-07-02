@@ -189,6 +189,7 @@ class SorryHammer:
         self.tactic = tactic if isinstance(tactic, str) else "first | " + " | ".join(['('+t+')' for t in tactic])
         self.imports = imports
         self.greedy = greedy
+        self.try_negation = try_negation
         self.sys_msg = f"""
 If the `sorry_hammer` parameter of the check_lean_code tool call is set to True,
 the tool will attempt to replace the first `sorry` in your code with a proof using a hammer tactic `{self.tactic}`.
@@ -223,7 +224,7 @@ Alternatively, without setting the `sorry_hammer` flag, you could manually repla
                     result['output'] +='\n' + output + '\n' + new_result['output']
                 else:
                     result['output']+=[{'data': output}] + new_result['output']
-                if try_negation:
+                if self.try_negation:
                     code = orig_code
                     if self.imports not in code:
                         code = self.imports + '\n' + code
