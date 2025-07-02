@@ -124,11 +124,27 @@ aider --model openai/sonnet
 
 ## Model Context Protocol (MCP) Server
 - `leanmcp.py` is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server. This exports Lean (and plugins including load_sorry) as a [MCP tool](https://modelcontextprotocol.io/docs/concepts/tools), without the LLM and the feedback loop. Works with apps that can utilize MCP servers, and are able to manage the feedback loop within the app.
-  Has been tested to work with [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview), [Cursor](https://www.cursor.com/) and [Goose](https://github.com/block/goose).
+  Has been tested to work with [Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview), Claude Desktop, [Cursor](https://www.cursor.com/) and [Goose](https://github.com/block/goose).
 - Note that the MCP tool does not come with the system messages that would be integrated in the Python library mode or the OpenAI-compatible API server mode. You may want to take some of the system messages in `leantool.py` relevant to your use case, and put it in the corresponding settings for your coding assistant, e.g. `CLAUDE.md` for Claude Code or the "Rules for AI" setting in Cursor. 
 - Can be run in `stdio` mode: e.g. when configuring your app for MCP, fill in the command `poetry run python leanmcp.py`
 - Can also serve over the network in `sse` mode: e.g. run `poetry run python leanmcp.py --sse --port 8008`,
   then fill in the URL `http://<your-host-or-ip-address>:8008/sse` in your app's configuration.
+- You can use tools like [Supergateway](https://github.com/supercorp-ai/supergateway) to convert between the two modes, in order to connect to apps that only support one mode. E.g. if you are serving the MCP server in `sse` mode, but wants Claude Desktop (which only supports `stdio`) to connect to it, you can install Supergateway and configure Claude Desktop's MCP with
+```
+{
+    "mcpServers": {
+        "LeanTool": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "supergateway",
+                "--sse",
+                "<your-mcp-server>/sse"
+            ]
+        }
+    }
+}
+```
   
 ### Example Set Up with Claude Code
 
