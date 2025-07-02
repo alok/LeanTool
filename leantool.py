@@ -197,10 +197,11 @@ Alternatively, without setting the `sorry_hammer` flag, you could manually repla
 """
     async def process(self, code, result):
         has_sorry = result_has_sorry(result)
+        orig_code = code
         if result['success'] and has_sorry:
             print ("Plugin SorryHammer activated")
             if self.imports not in code:
-                code = self.imports + code
+                code = self.imports + '\n' + code
             code = code.replace('sorry', self.tactic, 1)
             new_result = await check_lean_code(code, sorry_hammer=self.greedy)
             if new_result['success']:
@@ -222,6 +223,19 @@ Alternatively, without setting the `sorry_hammer` flag, you could manually repla
                     result['output'] +='\n' + output + '\n' + new_result['output']
                 else:
                     result['output']+=[{'data': output}] + new_result['output']
+                if try_negation:
+                    code = orig_code
+                    if self.imports not in code:
+                        code = self.imports + '\n' + code
+                    code = 'import LeanTool.CheckFalse\n' + code
+                    code = code.replace('sorry', f"(check_false {self.tactic})", 1)
+                    cf_result = await check_lean_code(code, sorry_hammer=False)
+                    if not cf_result['success']:
+                        cf_out = "SorryHammer proved that the goal corresponding to the first sorry is false. The following is the proof of the negation:"
+                    if isinstance(result['output'],str):
+                        result['output']+='\n'+cf_out+'\n'+cf_result['output']
+                    else:
+                        result['output']+=[{'data':output}]+cf_result['output']
         return result
 
 
