@@ -107,10 +107,12 @@ example : 3 ≤ 5 := by
 </example>
 
 You may also try the following tactics for closing goals, which might not have been in your training data:
-- `aesop` searchs for a proof that closes the goal
+- `aesop` searches for a proof that closes the goal
 - `omega` can close goals using integer and natural number arithmetic
 - `simp_all` is a stronger version of `simp [*] at *` where the hypotheses and target are simplified multiple times until no simplification is applicable.
 - `bv_decide` can close goals involving booleans and bit vectors
+- `grind` searches for a proof using a combination of techniques and solvers
+- `hammer` (after `import Hammer`) searches for a proof using built-in premise selection and then a combination of solvers
 """
 
 SYSTEM_MESSAGE_OUTPUT="""When you have a final answer:
